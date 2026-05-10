@@ -11,7 +11,7 @@ const DEFAULTS = {
   smtp_user: '',
   smtp_pass: '',
   smtp_from: '',
-  jwt_secret: '',
+  jwt_secret: 'travelloop_jwt_secret_2026',
   jwt_expires_in: '7d',
 }
 

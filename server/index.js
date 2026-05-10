@@ -7,8 +7,16 @@ const { DEFAULTS } = require('./src/utils/settings')
 
 const authRoutes = require('./src/routes/auth.routes')
 const adminRoutes = require('./src/routes/admin.routes')
+const userRoutes = require('./src/routes/user.routes')
 const tripRoutes = require('./src/routes/trip.routes')
 const destinationRoutes = require('./src/routes/destination.routes')
+const activityRoutes = require('./src/routes/activity.routes')
+const itineraryRoutes = require('./src/routes/itinerary.routes')
+const searchRoutes = require('./src/routes/search.routes')
+const budgetRoutes = require('./src/routes/budget.routes')
+const checklistRoutes = require('./src/routes/checklist.routes')
+const notesRoutes = require('./src/routes/notes.routes')
+const invoiceRoutes = require('./src/routes/invoice.routes')
 
 const app = express()
 
@@ -18,8 +26,16 @@ app.use('/uploads', express.static('uploads'))
 
 app.use('/api/auth', authRoutes)
 app.use('/api/admin', adminRoutes)
+app.use('/api/users', userRoutes)
 app.use('/api/trips', tripRoutes)
 app.use('/api/destinations', destinationRoutes)
+app.use('/api/activities', activityRoutes)
+app.use('/api/itineraries', itineraryRoutes)
+app.use('/api/search', searchRoutes)
+app.use('/api/budget', budgetRoutes)
+app.use('/api/checklist', checklistRoutes)
+app.use('/api/notes', notesRoutes)
+app.use('/api/invoices', invoiceRoutes)
 
 app.get('/api/health', (_, res) => res.json({ status: 'ok' }))
 

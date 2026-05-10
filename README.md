@@ -110,11 +110,19 @@ ADMIN_PASSWORD=Admin@1234
 CREATE DATABASE odoo_hackathon;
 ```
 
-### 4. Seed Admin User
+### 4. Seed Admin User & Settings
 
 ```bash
 cd server
+
+# Seed admin user
 npm run seed:admin
+
+# Seed default settings (JWT, SMTP, branding etc.)
+npm run seed:settings
+
+# Or seed both at once
+npm run seed
 ```
 
 ### 5. Start the Servers
@@ -162,9 +170,11 @@ npm run dev
 
 ### Server
 ```bash
-npm run dev        # Start with nodemon
-npm run start      # Start with node
-npm run seed:admin # Seed admin user
+npm run dev            # Start with nodemon
+npm run start          # Start with node
+npm run seed:admin     # Seed admin user
+npm run seed:settings  # Seed default settings
+npm run seed           # Seed admin + settings
 ```
 
 ### Client

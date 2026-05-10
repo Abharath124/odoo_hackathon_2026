@@ -6,6 +6,8 @@
     "start": "node index.js",
     "dev": "nodemon index.js",
     "seed:admin": "node src/seeders/adminSeeder.js",
+    "seed:settings": "node src/seeders/settingsSeeder.js",
+    "seed": "node src/seeders/adminSeeder.js && node src/seeders/settingsSeeder.js",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "author": "",

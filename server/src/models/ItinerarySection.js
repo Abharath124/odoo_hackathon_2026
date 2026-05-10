@@ -1,21 +1,17 @@
 const { DataTypes } = require('sequelize')
 const sequelize = require('../config/db')
 
-const Expense = sequelize.define('Expense', {
+const ItinerarySection = sequelize.define('ItinerarySection', {
   id: {
     type: DataTypes.INTEGER,
     autoIncrement: true,
     primaryKey: true,
   },
-  dayPlanId: {
-    type: DataTypes.INTEGER,
-    allowNull: false,
-  },
   itineraryId: {
     type: DataTypes.INTEGER,
     allowNull: false,
   },
-  activity: {
+  title: {
     type: DataTypes.STRING,
     allowNull: false,
   },
@@ -23,18 +19,21 @@ const Expense = sequelize.define('Expense', {
     type: DataTypes.TEXT,
     allowNull: true,
   },
-  category: {
-    type: DataTypes.ENUM('transport', 'food', 'accommodation', 'activity', 'shopping', 'other'),
+  type: {
+    type: DataTypes.ENUM('travel', 'hotel', 'activity', 'food', 'other'),
     defaultValue: 'other',
   },
-  amount: {
-    type: DataTypes.DECIMAL(10, 2),
-    allowNull: false,
-    defaultValue: 0,
+  startDate: {
+    type: DataTypes.DATEONLY,
+    allowNull: true,
   },
-  currency: {
-    type: DataTypes.STRING(10),
-    defaultValue: 'USD',
+  endDate: {
+    type: DataTypes.DATEONLY,
+    allowNull: true,
+  },
+  budget: {
+    type: DataTypes.DECIMAL(10, 2),
+    allowNull: true,
   },
   order: {
     type: DataTypes.INTEGER,
@@ -44,4 +43,4 @@ const Expense = sequelize.define('Expense', {
   timestamps: true,
 })
 
-module.exports = Expense
+module.exports = ItinerarySection

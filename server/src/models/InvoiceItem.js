@@ -1,40 +1,37 @@
 const { DataTypes } = require('sequelize')
 const sequelize = require('../config/db')
 
-const Expense = sequelize.define('Expense', {
+const InvoiceItem = sequelize.define('InvoiceItem', {
   id: {
     type: DataTypes.INTEGER,
     autoIncrement: true,
     primaryKey: true,
   },
-  dayPlanId: {
+  invoiceId: {
     type: DataTypes.INTEGER,
     allowNull: false,
   },
-  itineraryId: {
-    type: DataTypes.INTEGER,
-    allowNull: false,
-  },
-  activity: {
+  category: {
     type: DataTypes.STRING,
     allowNull: false,
   },
   description: {
-    type: DataTypes.TEXT,
+    type: DataTypes.STRING,
+    allowNull: false,
+  },
+  qtyDetails: {
+    type: DataTypes.STRING,
     allowNull: true,
   },
-  category: {
-    type: DataTypes.ENUM('transport', 'food', 'accommodation', 'activity', 'shopping', 'other'),
-    defaultValue: 'other',
+  unitCost: {
+    type: DataTypes.DECIMAL(10, 2),
+    allowNull: false,
+    defaultValue: 0,
   },
   amount: {
     type: DataTypes.DECIMAL(10, 2),
     allowNull: false,
     defaultValue: 0,
-  },
-  currency: {
-    type: DataTypes.STRING(10),
-    defaultValue: 'USD',
   },
   order: {
     type: DataTypes.INTEGER,
@@ -44,4 +41,4 @@ const Expense = sequelize.define('Expense', {
   timestamps: true,
 })
 
-module.exports = Expense
+module.exports = InvoiceItem

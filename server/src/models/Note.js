@@ -17,9 +17,24 @@ const Note = sequelize.define(
       allowNull: false,
     },
 
+    title: {
+      type: DataTypes.STRING,
+      allowNull: true,
+    },
+
     noteText: {
       type: DataTypes.TEXT,
       allowNull: false,
+    },
+
+    dayNumber: {
+      type: DataTypes.INTEGER,
+      allowNull: true,
+    },
+
+    stopId: {
+      type: DataTypes.INTEGER,
+      allowNull: true,
     },
   },
   {

@@ -5,6 +5,13 @@ const { sendOtpEmail, sendResetEmail } = require('../utils/email')
 const { generateOtp, otpExpiresAt } = require('../utils/otp')
 const { getSetting } = require('../utils/settings')
 
+const isSmtpConfigured = async () => {
+  const host = await getSetting('smtp_host')
+  const user = await getSetting('smtp_user')
+  const pass = await getSetting('smtp_pass')
+  return !!(host && user && pass)
+}
+
 const register = async (req, res) => {
   try {
     const { name, email, password } = req.body
@@ -13,22 +20,27 @@ const register = async (req, res) => {
     if (existing) return res.status(409).json({ message: 'Email already registered' })
 
     const hashed = await bcrypt.hash(password, 10)
-    const otp = generateOtp()
     const avatar = req.file ? `/uploads/${req.file.filename}` : null
 
-    await User.create({
-      name,
-      email,
-      password: hashed,
-      otp,
-      otpExpiresAt: otpExpiresAt(),
-      avatar,
-    })
+    if (!await isSmtpConfigured()) {
+      const user = await User.create({ name, email, password: hashed, avatar, isVerified: true })
+      const secret = await getSetting('jwt_secret')
+      const expiresIn = await getSetting('jwt_expires_in')
+      const token = jwt.sign({ id: user.id, email: user.email, role: user.role }, secret, { expiresIn })
+      return res.status(201).json({
+        message: 'Registration successful.',
+        token,
+        user: { id: user.id, name: user.name, email: user.email, role: user.role, avatar: user.avatar },
+      })
+    }
 
+    const otp = generateOtp()
+    await User.create({ name, email, password: hashed, otp, otpExpiresAt: otpExpiresAt(), avatar })
     await sendOtpEmail(email, otp)
 
     res.status(201).json({ message: 'Registration successful. Check your email for the OTP.' })
   } catch (err) {
+    console.error('[register]', err)
     res.status(500).json({ message: 'Server error', error: err.message })
   }
 }
@@ -87,6 +99,7 @@ const login = async (req, res) => {
       user: { id: user.id, name: user.name, email: user.email, role: user.role, avatar: user.avatar },
     })
   } catch (err) {
+    console.error('[login]', err)
     res.status(500).json({ message: 'Server error', error: err.message })
   }
 }
@@ -97,6 +110,8 @@ const forgotPassword = async (req, res) => {
 
     const user = await User.findOne({ where: { email } })
     if (!user) return res.status(404).json({ message: 'No account found with this email' })
+
+    if (!await isSmtpConfigured()) return res.status(503).json({ message: 'Password reset is unavailable. SMTP is not configured.' })
 
     const otp = generateOtp()
     await user.update({ otp, otpExpiresAt: otpExpiresAt() })

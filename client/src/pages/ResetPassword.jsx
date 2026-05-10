@@ -7,6 +7,7 @@ import { Card, CardHeader, CardTitle, CardContent, CardFooter } from '../compone
 import { Input } from '../components/ui/Input'
 import { Button } from '../components/ui/Button'
 import api from '../utils/api'
+import BrandLogo from '../components/BrandLogo'
 
 const emailSchema = z.object({
   email: z.string().min(1, 'Email is required').email('Invalid email address'),
@@ -26,6 +27,8 @@ export default function ResetPassword() {
   const [step, setStep] = useState(1)
   const [email, setEmail] = useState('')
 
+  const [unavailable, setUnavailable] = useState(false)
+
   const emailForm = useForm({ resolver: zodResolver(emailSchema) })
   const resetForm = useForm({ resolver: zodResolver(resetSchema) })
 
@@ -35,6 +38,7 @@ export default function ResetPassword() {
       setEmail(data.email)
       setStep(2)
     } catch (err) {
+      if (err.response?.status === 503) return setUnavailable(true)
       emailForm.setError('root', { message: err.response?.data?.message || 'Failed to send OTP' })
     }
   }
@@ -52,8 +56,8 @@ export default function ResetPassword() {
     <Card className="max-w-sm w-full">
 
       <CardHeader>
-        <div className="w-9 h-9 rounded-xl bg-primary flex items-center justify-center mb-4">
-          <span className="text-white text-sm">⬡</span>
+        <div className="flex justify-center mb-4">
+          <BrandLogo size="lg" />
         </div>
         <CardTitle description={step === 1 ? 'Enter your email to receive a reset OTP' : `Enter the OTP sent to ${email}`}>
           {step === 1 ? 'Reset password' : 'Set new password'}
@@ -61,7 +65,9 @@ export default function ResetPassword() {
       </CardHeader>
 
       <CardContent>
-        {step === 1 ? (
+        {unavailable ? (
+          <p className="text-sm text-zinc-500 text-center py-2">Something went wrong, try again after sometime.</p>
+        ) : step === 1 ? (
           <form onSubmit={emailForm.handleSubmit(onSendOtp)} className="flex flex-col gap-4">
             <Input id="email" label="Email address" type="text" placeholder="you@example.com" required error={emailForm.formState.errors.email?.message} {...emailForm.register('email')} />
             <Button type="submit" disabled={emailForm.formState.isSubmitting} className="mt-1">

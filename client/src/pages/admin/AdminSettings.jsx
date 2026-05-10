@@ -1,10 +1,11 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useState, useRef } from 'react'
 import { useDispatch, useSelector } from 'react-redux'
 import { useForm, useController } from 'react-hook-form'
-import { Save, Palette, Mail, KeyRound, Globe, CheckCircle, Loader2 } from 'lucide-react'
+import { Save, Palette, Mail, KeyRound, Globe, CheckCircle, Loader2, ImageIcon } from 'lucide-react'
 import { fetchSettings, saveSettings } from '../../store/settingsSlice'
 import { fetchSiteSettings } from '../../store/siteSlice'
 import { Input } from '../../components/ui/Input'
+import api from '../../utils/api'
 
 function ColorField({ label, name, placeholder, control }) {
   const { field } = useController({ name, control, defaultValue: '' })
@@ -50,12 +51,29 @@ function Section({ icon: Icon, title, desc, children }) {
 export default function AdminSettings() {
   const dispatch = useDispatch()
   const { data, loading, saving } = useSelector((state) => state.settings)
+  const { logo } = useSelector((state) => state.site)
   const [saved, setSaved] = useState(false)
+  const [logoPreview, setLogoPreview] = useState(null)
+  const logoRef = useRef(null)
 
   const { register, handleSubmit, reset, control } = useForm()
 
   useEffect(() => { dispatch(fetchSettings()) }, [])
   useEffect(() => { if (Object.keys(data).length) reset(data) }, [data])
+
+  const handleLogoChange = async (e) => {
+    const file = e.target.files[0]
+    if (!file) return
+    setLogoPreview(URL.createObjectURL(file))
+    const formData = new FormData()
+    formData.append('logo', file)
+    try {
+      await api.post('/admin/settings/logo', formData)
+      dispatch(fetchSiteSettings())
+    } catch (err) {
+      console.error('Logo upload failed:', err.response?.data || err.message)
+    }
+  }
 
   const onSubmit = async (formData) => {
     const cleaned = Object.fromEntries(
@@ -98,13 +116,38 @@ export default function AdminSettings() {
         </button>
       </div>
 
-      <Section icon={Globe} title="Branding" desc="Customize your landing page content.">
-        <div className="flex flex-col gap-4">
-          <Input id="site_name" label="Site name" type="text" placeholder="Workspace" {...register('site_name')} />
-          <Input id="site_tagline" label="Tagline" type="text" placeholder="The minimal workspace for modern teams" {...register('site_tagline')} />
+      {/* Logo */}
+      <Section icon={ImageIcon} title="Logo" desc="Upload your brand logo shown on auth pages and navbar.">
+        <div className="flex items-center gap-5">
+          <div
+            onClick={() => logoRef.current.click()}
+            className="w-16 h-16 rounded-xl border-2 border-dashed border-zinc-200 flex items-center justify-center cursor-pointer hover:border-zinc-400 transition-colors overflow-hidden shrink-0"
+          >
+            {logoPreview || logo ? (
+              <img src={logoPreview || `http://localhost:5000${logo}`} alt="logo" className="w-full h-full object-cover" />
+            ) : (
+              <ImageIcon size={20} className="text-zinc-300" />
+            )}
+          </div>
+          <div className="flex flex-col gap-1">
+            <button type="button" onClick={() => logoRef.current.click()} className="text-sm font-medium text-primary hover:underline text-left">
+              {logo || logoPreview ? 'Change logo' : 'Upload logo'}
+            </button>
+            <p className="text-xs text-secondary">PNG, JPG or WebP · Max 2MB</p>
+          </div>
+          <input ref={logoRef} type="file" accept="image/*" className="hidden" onChange={handleLogoChange} />
         </div>
       </Section>
 
+      {/* Branding */}
+      <Section icon={Globe} title="Branding" desc="Customize your landing page content.">
+        <div className="flex flex-col gap-4">
+          <Input id="site_name" label="Site name" type="text" placeholder="TravelLoop" {...register('site_name')} />
+          <Input id="site_tagline" label="Tagline" type="text" placeholder="Explore the world, together." {...register('site_tagline')} />
+        </div>
+      </Section>
+
+      {/* Colors */}
       <Section icon={Palette} title="Colors" desc="Set your primary and secondary brand colors.">
         <div className="flex flex-col gap-4">
           {[
@@ -116,6 +159,7 @@ export default function AdminSettings() {
         </div>
       </Section>
 
+      {/* SMTP */}
       <Section icon={Mail} title="SMTP" desc="Configure email delivery settings.">
         <div className="flex flex-col gap-4">
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
@@ -128,6 +172,7 @@ export default function AdminSettings() {
         </div>
       </Section>
 
+      {/* JWT */}
       <Section icon={KeyRound} title="JWT" desc="Configure JSON Web Token settings.">
         <div className="flex flex-col gap-4">
           <Input id="jwt_secret" label="JWT Secret" type="password" placeholder="••••••••" {...register('jwt_secret')} />

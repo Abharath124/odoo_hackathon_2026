@@ -10,7 +10,8 @@ logs/
 npm-debug.log*
 
 # Files
-uploads/
+uploads/*
+!uploads/travelloop.png
 
 # OS
 .DS_Store
@@ -22,3 +23,6 @@ Thumbs.db
 
 # Build
 dist/
+
+# Rest
+test.rest
