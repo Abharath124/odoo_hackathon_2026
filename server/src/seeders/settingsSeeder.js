@@ -11,13 +11,13 @@ const seedSettings = async () => {
     const seeds = {
       ...DEFAULTS,
       // override with required values that must be set
-      jwt_secret: process.env.JWT_SECRET || 'travelloop_jwt_secret_2026',
+      jwt_secret: 'travelloop_jwt_secret_2026',
       jwt_expires_in: '7d',
-      smtp_host: process.env.SMTP_HOST || '',
-      smtp_port: process.env.SMTP_PORT || '587',
-      smtp_user: process.env.SMTP_USER || '',
-      smtp_pass: process.env.SMTP_PASS || '',
-      smtp_from: process.env.SMTP_FROM || '',
+      smtp_host: '',
+      smtp_port: '587',
+      smtp_user: '',
+      smtp_pass: '',
+      smtp_from: '',
     }
 
     let created = 0

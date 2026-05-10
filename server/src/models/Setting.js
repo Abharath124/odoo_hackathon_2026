@@ -3,8 +3,9 @@ const sequelize = require('../config/db')
 
 const Setting = sequelize.define('Setting', {
   key: {
-    type: DataTypes.INTEGER,
-    autoIncrement: true,
+    type: DataTypes.STRING,
+    allowNull: false,
+    unique: true,
     primaryKey: true,
   },
   value: {
