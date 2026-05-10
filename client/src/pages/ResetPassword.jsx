@@ -7,7 +7,6 @@ import { Card, CardHeader, CardTitle, CardContent, CardFooter } from '../compone
 import { Input } from '../components/ui/Input'
 import { Button } from '../components/ui/Button'
 import api from '../utils/api'
-import BrandLogo from '../components/BrandLogo'
 
 const emailSchema = z.object({
   email: z.string().min(1, 'Email is required').email('Invalid email address'),
@@ -53,7 +52,9 @@ export default function ResetPassword() {
     <Card className="max-w-sm w-full">
 
       <CardHeader>
-        <div className="mb-4"><BrandLogo size="md" /></div>
+        <div className="w-9 h-9 rounded-xl bg-primary flex items-center justify-center mb-4">
+          <span className="text-white text-sm">⬡</span>
+        </div>
         <CardTitle description={step === 1 ? 'Enter your email to receive a reset OTP' : `Enter the OTP sent to ${email}`}>
           {step === 1 ? 'Reset password' : 'Set new password'}
         </CardTitle>

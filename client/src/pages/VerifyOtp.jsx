@@ -8,7 +8,6 @@ import { Input } from '../components/ui/Input'
 import { Button } from '../components/ui/Button'
 import api from '../utils/api'
 import { setCredentials } from '../store/authSlice'
-import BrandLogo from '../components/BrandLogo'
 
 const schema = z.object({
   otp: z.string().length(6, 'OTP must be 6 digits'),
@@ -38,7 +37,9 @@ export default function VerifyOtp() {
     <Card className="max-w-sm w-full">
 
       <CardHeader>
-        <div className="mb-4"><BrandLogo size="md" /></div>
+        <div className="w-9 h-9 rounded-xl bg-primary flex items-center justify-center mb-4">
+          <span className="text-white text-sm">⬡</span>
+        </div>
         <CardTitle description={`Enter the 6-digit OTP sent to ${email}`}>
           Verify your email
         </CardTitle>
