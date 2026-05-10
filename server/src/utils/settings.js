@@ -5,7 +5,7 @@ const DEFAULTS = {
   site_tagline: 'Explore the world, together.',
   primary_color: '#18181b',
   secondary_color: '#71717a',
-  logo: '',
+  logo: '/uploads/travelloop.png',
   smtp_host: '',
   smtp_port: '587',
   smtp_user: '',
@@ -19,7 +19,7 @@ const getSetting = async (key) => {
   try {
     const row = await Setting.findByPk(key)
     if (row?.value && row.value.trim() !== '') return row.value
-  } catch (_) {}
+  } catch (_) { }
   return DEFAULTS[key] ?? null
 }
 
