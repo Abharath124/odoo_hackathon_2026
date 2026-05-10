@@ -6,6 +6,7 @@ import api from '../utils/api'
 const navItems = [
   { label: 'Dashboard', path: '/home' },
   { label: 'My Trips', path: '/trips' },
+  { label: 'AI Itinerary', path: '/ai-itinerary' },
   { label: 'Itinerary', path: '/itinerary' },
   { label: 'Budget', path: '/budget' },
   { label: 'Packing Checklist', path: '/packing' },

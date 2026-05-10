@@ -34,6 +34,7 @@ import UserProfile from './pages/UserProfile'
 import AdminDashboard from './pages/admin/AdminDashboard'
 import AdminUsers from './pages/admin/AdminUsers'
 import AdminSettings from './pages/admin/AdminSettings'
+import AIItinerary from './pages/AIItinerary'
 
 function App() {
   const dispatch = useDispatch()
@@ -87,6 +88,7 @@ function App() {
             <Route path="/community" element={<Community />} />
             <Route path="/invoice" element={<ExpenseInvoice />} />
             <Route path="/profile" element={<UserProfile />} />
+            <Route path="/ai-itinerary" element={<AIItinerary />} />
           </Route>
         </Route>
 

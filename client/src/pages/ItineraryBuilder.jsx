@@ -29,11 +29,7 @@ export default function ItineraryBuilder() {
   const [trips, setTrips] = useState([])
   const [error, setError] = useState('')
 
-  useEffect(() => {
-    api.get('/trips').then((r) => setTrips(r.data.trips || [])).catch(() => {})
-  }, [])
-
-  const { register, control, handleSubmit, formState: { errors, isSubmitting } } = useForm({
+  const { register, control, handleSubmit, formState: { errors, isSubmitting }, reset } = useForm({
     resolver: zodResolver(schema),
     defaultValues: {
       tripId: '',
@@ -43,6 +39,27 @@ export default function ItineraryBuilder() {
   })
 
   const { fields, append, remove } = useFieldArray({ control, name: 'sections' })
+
+  useEffect(() => {
+    api.get('/trips').then((r) => setTrips(r.data.trips || [])).catch(() => {})
+    
+    // Check if coming from AI Itinerary
+    const aiData = sessionStorage.getItem('aiItineraryData')
+    if (aiData) {
+      try {
+        const data = JSON.parse(aiData)
+        console.log('Loading AI data:', data)
+        reset({
+          tripId: data.tripId.toString(),
+          title: data.title,
+          sections: data.sections,
+        })
+        sessionStorage.removeItem('aiItineraryData')
+      } catch (e) {
+        console.error('Error parsing AI data:', e)
+      }
+    }
+  }, [reset])
 
   const onSubmit = async (data) => {
     setError('')

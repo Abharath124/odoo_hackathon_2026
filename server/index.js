@@ -18,6 +18,7 @@ const checklistRoutes = require('./src/routes/checklist.routes')
 const notesRoutes = require('./src/routes/notes.routes')
 const invoiceRoutes = require('./src/routes/invoice.routes')
 const communityRoutes = require('./src/routes/community.routes')
+const aiRoutes = require('./src/routes/ai.routes')
 
 const app = express()
 
@@ -38,6 +39,7 @@ app.use('/api/checklist', checklistRoutes)
 app.use('/api/notes', notesRoutes)
 app.use('/api/invoices', invoiceRoutes)
 app.use('/api/community', communityRoutes)
+app.use('/api/ai', aiRoutes)
 
 app.get('/api/health', (_, res) => res.json({ status: 'ok' }))
 
