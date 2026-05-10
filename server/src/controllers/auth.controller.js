@@ -5,40 +5,30 @@ const { sendOtpEmail, sendResetEmail } = require('../utils/email')
 const { generateOtp, otpExpiresAt } = require('../utils/otp')
 const { getSetting } = require('../utils/settings')
 
-const isSmtpConfigured = async () => {
-  const host = await getSetting('smtp_host')
-  const user = await getSetting('smtp_user')
-  const pass = await getSetting('smtp_pass')
-  return !!(host && user && pass)
-}
-
 const register = async (req, res) => {
   try {
-    const { name, email, password } = req.body
+    const { firstName, lastName, email, phone, city, country, additionalInfo, password } = req.body
 
     const existing = await User.findOne({ where: { email } })
     if (existing) return res.status(409).json({ message: 'Email already registered' })
 
     const hashed = await bcrypt.hash(password, 10)
-    const avatar = req.file ? `/uploads/${req.file.filename}` : null
+    const name = `${firstName} ${lastName}`
 
-    if (!await isSmtpConfigured()) {
-      const user = await User.create({ name, email, password: hashed, avatar, isVerified: true })
-      const secret = await getSetting('jwt_secret')
-      const expiresIn = await getSetting('jwt_expires_in')
-      const token = jwt.sign({ id: user.id, email: user.email, role: user.role }, secret, { expiresIn })
-      return res.status(201).json({
-        message: 'Registration successful.',
-        token,
-        user: { id: user.id, name: user.name, email: user.email, role: user.role, avatar: user.avatar },
-      })
-    }
+    const user = await User.create({ 
+      firstName, 
+      lastName, 
+      name, 
+      email, 
+      password: hashed, 
+      phone, 
+      city, 
+      country, 
+      additionalInfo,
+      isVerified: true 
+    })
 
-    const otp = generateOtp()
-    await User.create({ name, email, password: hashed, otp, otpExpiresAt: otpExpiresAt(), avatar })
-    await sendOtpEmail(email, otp)
-
-    res.status(201).json({ message: 'Registration successful. Check your email for the OTP.' })
+    res.status(201).json({ message: 'Registration successful. You can now log in.' })
   } catch (err) {
     console.error('[register]', err)
     res.status(500).json({ message: 'Server error', error: err.message })
@@ -81,7 +71,6 @@ const login = async (req, res) => {
 
     const user = await User.findOne({ where: { email } })
     if (!user) return res.status(401).json({ message: 'Invalid credentials' })
-    if (!user.isVerified) return res.status(403).json({ message: 'Please verify your email first' })
 
     const match = await bcrypt.compare(password, user.password)
     if (!match) return res.status(401).json({ message: 'Invalid credentials' })
@@ -111,14 +100,19 @@ const forgotPassword = async (req, res) => {
     const user = await User.findOne({ where: { email } })
     if (!user) return res.status(404).json({ message: 'No account found with this email' })
 
-    if (!await isSmtpConfigured()) return res.status(503).json({ message: 'Password reset is unavailable. SMTP is not configured.' })
-
     const otp = generateOtp()
     await user.update({ otp, otpExpiresAt: otpExpiresAt() })
-    await sendResetEmail(email, otp)
+    
+    try {
+      await sendResetEmail(email, otp)
+    } catch (emailErr) {
+      console.error('[forgotPassword sendResetEmail]', emailErr)
+      return res.status(500).json({ message: 'Failed to send reset email. Please check email configuration.' })
+    }
 
     res.json({ message: 'Password reset OTP sent to your email' })
   } catch (err) {
+    console.error('[forgotPassword]', err)
     res.status(500).json({ message: 'Server error', error: err.message })
   }
 }

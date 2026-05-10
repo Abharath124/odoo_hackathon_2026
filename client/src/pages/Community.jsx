@@ -10,10 +10,17 @@ const postSchema = z.object({
   title: z.string().min(2, 'Title is required'),
   content: z.string().min(10, 'Content must be at least 10 characters'),
   destination: z.string().optional(),
-  category: z.string().optional(),
+  category: z.enum(['trip', 'activity', 'food', 'hotel', 'general']).optional(),
 })
 
 const colors = ['#4285F4', '#34A853', '#FBBC05', '#EA4335', '#9C27B0']
+const categoryOptions = [
+  { value: 'trip', label: 'Trip' },
+  { value: 'activity', label: 'Activity' },
+  { value: 'food', label: 'Food' },
+  { value: 'hotel', label: 'Hotel' },
+  { value: 'general', label: 'General' },
+]
 
 function PostCard({ post, currentUserId, onLike, onComment, onDelete }) {
   const [showComments, setShowComments] = useState(false)
@@ -31,7 +38,9 @@ function PostCard({ post, currentUserId, onLike, onComment, onDelete }) {
       const { data } = await api.post(`/community/${post.id}/comments`, { content: commentText })
       setComments(prev => [...prev, data.comment])
       setCommentText('')
-    } catch (_) {}
+    } catch (err) {
+      console.error('Comment error:', err)
+    }
     setSubmitting(false)
   }
 
@@ -39,7 +48,9 @@ function PostCard({ post, currentUserId, onLike, onComment, onDelete }) {
     try {
       await api.delete(`/community/${post.id}/comments/${commentId}`)
       setComments(prev => prev.filter(c => c.id !== commentId))
-    } catch (_) {}
+    } catch (err) {
+      console.error('Delete comment error:', err)
+    }
   }
 
   return (
@@ -134,10 +145,11 @@ export default function Community() {
   const [search, setSearch] = useState('')
   const [showForm, setShowForm] = useState(false)
   const [likedIds, setLikedIds] = useState([])
+  const [error, setError] = useState('')
 
-  const { register, handleSubmit, reset, formState: { errors, isSubmitting } } = useForm({
+  const { register, handleSubmit, reset, formState: { errors, isSubmitting }, setError: setFormError } = useForm({
     resolver: zodResolver(postSchema),
-    defaultValues: { title: '', content: '', destination: '', category: '' },
+    defaultValues: { title: '', content: '', destination: '', category: 'general' },
   })
 
   const fetchPosts = async (q = '') => {
@@ -146,7 +158,9 @@ export default function Community() {
       const params = q ? `?search=${q}` : ''
       const { data } = await api.get(`/community${params}`)
       setPosts(data.posts || [])
-    } catch (_) {}
+    } catch (err) {
+      console.error('Fetch posts error:', err)
+    }
     setLoading(false)
   }
 
@@ -154,16 +168,22 @@ export default function Community() {
 
   const onSubmit = async (data) => {
     try {
+      setError('')
       const { data: res } = await api.post('/community', {
         title: data.title,
         content: data.content,
         destination: data.destination || null,
-        category: data.category || null,
+        category: data.category || 'general',
       })
       setPosts(prev => [res.post, ...prev])
       reset()
       setShowForm(false)
-    } catch (_) {}
+    } catch (err) {
+      console.error('Post creation error:', err)
+      const errorMsg = err.response?.data?.message || err.message || 'Failed to create post'
+      setError(errorMsg)
+      setFormError('root', { message: errorMsg })
+    }
   }
 
   const handleLike = async (postId) => {
@@ -171,14 +191,18 @@ export default function Community() {
       const { data } = await api.post(`/community/${postId}/like`)
       setLikedIds(prev => data.liked ? [...prev, postId] : prev.filter(id => id !== postId))
       setPosts(prev => prev.map(p => p.id === postId ? { ...p, likesCount: data.likesCount, isLiked: data.liked } : p))
-    } catch (_) {}
+    } catch (err) {
+      console.error('Like error:', err)
+    }
   }
 
   const handleDelete = async (postId) => {
     try {
       await api.delete(`/community/${postId}`)
       setPosts(prev => prev.filter(p => p.id !== postId))
-    } catch (_) {}
+    } catch (err) {
+      console.error('Delete error:', err)
+    }
   }
 
   return (
@@ -218,13 +242,18 @@ export default function Community() {
           </div>
           <div className="flex gap-3">
             <input {...register('destination')} placeholder="Destination (e.g. Paris)" className="flex-1 border border-zinc-200 rounded-lg px-3.5 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-200 focus:border-transparent transition-all" />
-            <input {...register('category')} placeholder="Category (e.g. Adventure)" className="flex-1 border border-zinc-200 rounded-lg px-3.5 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-200 focus:border-transparent transition-all" />
+            <select {...register('category')} className="flex-1 border border-zinc-200 rounded-lg px-3.5 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-200 focus:border-transparent transition-all">
+              {categoryOptions.map(opt => (
+                <option key={opt.value} value={opt.value}>{opt.label}</option>
+              ))}
+            </select>
           </div>
+          {error && <p className="text-xs text-red-400">{error}</p>}
           <div className="flex gap-2">
             <button type="submit" disabled={isSubmitting} className="px-4 py-2 rounded-lg text-sm font-medium text-white hover:opacity-90 transition-all disabled:opacity-50" style={{ background: '#4285F4' }}>
               {isSubmitting ? 'Posting...' : 'Post'}
             </button>
-            <button type="button" onClick={() => { setShowForm(false); reset() }} className="px-4 py-2 rounded-lg text-sm font-medium text-secondary border border-zinc-200 hover:bg-zinc-50 transition-all">Cancel</button>
+            <button type="button" onClick={() => { setShowForm(false); reset(); setError('') }} className="px-4 py-2 rounded-lg text-sm font-medium text-secondary border border-zinc-200 hover:bg-zinc-50 transition-all">Cancel</button>
           </div>
         </form>
       )}

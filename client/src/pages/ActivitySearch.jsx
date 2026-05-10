@@ -1,10 +1,20 @@
 import { useEffect, useState } from 'react'
-import { Search, SlidersHorizontal, ArrowUpDown, LayoutGrid, Plus, MapPin, Clock, Star } from 'lucide-react'
+import { Search, SlidersHorizontal, ArrowUpDown, LayoutGrid, Plus, MapPin, Clock, Star, Compass, Landmark, Utensils, Mountain, Users } from 'lucide-react'
 import api from '../utils/api'
 
 const typeColors = {
   Adventure: '#EA4335', Landmark: '#4285F4', History: '#FBBC05',
   Culture: '#34A853', Nature: '#34A853', Food: '#FBBC05', place: '#4285F4',
+}
+
+const typeIcons = {
+  Adventure: Mountain,
+  Landmark: Landmark,
+  History: Landmark,
+  Culture: Users,
+  Nature: Mountain,
+  Food: Utensils,
+  place: Compass,
 }
 
 export default function ActivitySearch() {
@@ -54,18 +64,24 @@ export default function ActivitySearch() {
         <div className="flex flex-col gap-3">
           {results.length === 0 ? (
             <div className="flex flex-col items-center justify-center py-20 gap-3">
-              <span className="text-3xl">🔍</span>
+              <Compass size={32} className="text-secondary" />
               <p className="text-sm text-secondary">No results found.</p>
             </div>
           ) : (
             results.map((item) => {
               const isAdded = added.includes(item.id)
               const color = typeColors[item.type] || typeColors[item.category] || '#4285F4'
+              const IconComponent = typeIcons[item.type] || typeIcons[item.category] || Compass
+              
               return (
                 <div key={item.id} className="bg-white border border-zinc-100 rounded-xl px-5 py-4 flex items-center justify-between gap-4 hover:shadow-md transition-all">
                   <div className="flex items-center gap-4">
-                    <div className="w-11 h-11 rounded-xl flex items-center justify-center text-2xl shrink-0" style={{ background: `${color}15` }}>
-                      {item.image ? <img src={`http://localhost:5000${item.image}`} className="w-full h-full object-cover rounded-xl" alt={item.name} /> : '🎯'}
+                    <div className="w-11 h-11 rounded-xl flex items-center justify-center text-lg shrink-0" style={{ background: `${color}15` }}>
+                      {item.image ? (
+                        <img src={`http://localhost:5000${item.image}`} className="w-full h-full object-cover rounded-xl" alt={item.name} />
+                      ) : (
+                        <IconComponent size={20} style={{ color }} />
+                      )}
                     </div>
                     <div className="flex flex-col gap-1">
                       <p className="text-sm font-semibold text-primary">{item.name}</p>

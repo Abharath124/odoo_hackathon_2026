@@ -1,17 +1,20 @@
 const nodemailer = require('nodemailer')
-const { getSetting } = require('../utils/settings')
 
 const getTransporter = async () => {
-  const host = await getSetting('smtp_host')
-  const port = await getSetting('smtp_port')
-  const user = await getSetting('smtp_user')
-  const pass = await getSetting('smtp_pass')
+  const user = process.env.EMAIL_USER
+  const pass = process.env.EMAIL_PASS
+
+  if (!user || !pass) {
+    console.error('[getTransporter] Missing EMAIL_USER or EMAIL_PASS in .env')
+    throw new Error('Email credentials not configured in .env')
+  }
 
   return nodemailer.createTransport({
-    host,
-    port: parseInt(port),
-    secure: false,
-    auth: { user, pass },
+    service: 'gmail',
+    auth: {
+      user,
+      pass,
+    },
   })
 }
 

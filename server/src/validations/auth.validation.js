@@ -1,8 +1,13 @@
 const { body } = require('express-validator')
 
 const registerValidation = [
-  body('name').trim().notEmpty().withMessage('Name is required'),
+  body('firstName').trim().notEmpty().withMessage('First name is required'),
+  body('lastName').trim().notEmpty().withMessage('Last name is required'),
   body('email').isEmail().withMessage('Invalid email address').normalizeEmail(),
+  body('phone').trim().notEmpty().withMessage('Phone number is required'),
+  body('city').trim().notEmpty().withMessage('City is required'),
+  body('country').trim().notEmpty().withMessage('Country is required'),
+  body('additionalInfo').trim().optional(),
   body('password').isLength({ min: 8 }).withMessage('Password must be at least 8 characters'),
 ]
 

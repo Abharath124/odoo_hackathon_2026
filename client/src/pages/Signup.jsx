@@ -1,20 +1,24 @@
-import { useState, useRef } from 'react'
+import { useEffect } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
-import { Camera } from 'lucide-react'
 import { Card, CardHeader, CardTitle, CardContent, CardFooter } from '../components/ui/Card'
 import { Input } from '../components/ui/Input'
 import { Button } from '../components/ui/Button'
 import { useDispatch } from 'react-redux'
-import { setCredentials } from '../store/authSlice'
 import api from '../utils/api'
+import { fetchSiteSettings } from '../store/siteSlice'
 import BrandLogo from '../components/BrandLogo'
 
 const schema = z.object({
-  name: z.string().min(1, 'Full name is required'),
+  firstName: z.string().min(1, 'First name is required'),
+  lastName: z.string().min(1, 'Last name is required'),
   email: z.string().min(1, 'Email is required').email('Invalid email address'),
+  phone: z.string().min(10, 'Phone number must be at least 10 digits'),
+  city: z.string().min(1, 'City is required'),
+  country: z.string().min(1, 'Country is required'),
+  additionalInfo: z.string().optional(),
   password: z.string().min(8, 'Minimum 8 characters'),
   confirm: z.string().min(1, 'Please confirm your password'),
 }).refine((data) => data.password === data.confirm, {
@@ -25,36 +29,28 @@ const schema = z.object({
 export default function Signup() {
   const dispatch = useDispatch()
   const navigate = useNavigate()
-  const fileRef = useRef(null)
-  const [preview, setPreview] = useState(null)
-  const [avatarFile, setAvatarFile] = useState(null)
 
   const { register, handleSubmit, formState: { errors, isSubmitting }, setError } = useForm({
     resolver: zodResolver(schema),
   })
 
-  const handleFileChange = (e) => {
-    const file = e.target.files[0]
-    if (!file) return
-    setAvatarFile(file)
-    setPreview(URL.createObjectURL(file))
-  }
+  useEffect(() => {
+    dispatch(fetchSiteSettings())
+  }, [dispatch])
 
   const onSubmit = async (data) => {
     try {
-      const formData = new FormData()
-      formData.append('name', data.name)
-      formData.append('email', data.email)
-      formData.append('password', data.password)
-      if (avatarFile) formData.append('avatar', avatarFile)
-
-      const res = await api.post('/auth/register', formData)
-      if (res.data.token) {
-        dispatch(setCredentials({ token: res.data.token, user: res.data.user }))
-        navigate(res.data.user.role === 'admin' ? '/admin' : '/home')
-      } else {
-        navigate(`/verify-otp?email=${encodeURIComponent(data.email)}`)
-      }
+      await api.post('/auth/register', {
+        firstName: data.firstName,
+        lastName: data.lastName,
+        email: data.email,
+        phone: data.phone,
+        city: data.city,
+        country: data.country,
+        additionalInfo: data.additionalInfo,
+        password: data.password,
+      })
+      navigate('/login')
     } catch (err) {
       console.error('[signup]', err)
       setError('root', { message: err.response?.data?.message || err.message || 'Registration failed' })
@@ -62,34 +58,11 @@ export default function Signup() {
   }
 
   return (
-    <Card className="max-w-sm w-full">
+    <Card className="max-w-2xl w-full">
 
       <CardHeader>
-        {/* Photo upload */}
-        <div className="flex flex-col items-center mb-4">
-          <div className="mb-3">
-            <BrandLogo size="lg" />
-          </div>
-          <div
-            onClick={() => fileRef.current.click()}
-            className="relative w-20 h-20 rounded-full border-2 border-dashed border-zinc-200 flex items-center justify-center cursor-pointer hover:border-zinc-400 transition-colors overflow-hidden group"
-          >
-            {preview ? (
-              <img src={preview} alt="avatar" className="w-full h-full object-cover" />
-            ) : (
-              <div className="flex flex-col items-center gap-1">
-                <Camera size={20} className="text-zinc-400" />
-                <span className="text-xs text-zinc-400">Photo</span>
-              </div>
-            )}
-            {preview && (
-              <div className="absolute inset-0 bg-black/40 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
-                <Camera size={18} className="text-white" />
-              </div>
-            )}
-          </div>
-          <input ref={fileRef} type="file" accept="image/*" className="hidden" onChange={handleFileChange} />
-          <p className="text-xs text-zinc-400 mt-2">Upload profile photo</p>
+        <div className="flex justify-center mb-4">
+          <BrandLogo size="lg" />
         </div>
 
         <CardTitle description="Create your account to get started">Get started</CardTitle>
@@ -97,12 +70,38 @@ export default function Signup() {
 
       <CardContent>
         <form onSubmit={handleSubmit(onSubmit)} className="flex flex-col gap-4">
-          <Input id="name" label="Full name" type="text" placeholder="John Doe" required error={errors.name?.message} {...register('name')} />
+          <div className="grid grid-cols-2 gap-4">
+            <Input id="firstName" label="First name" type="text" placeholder="John" required error={errors.firstName?.message} {...register('firstName')} />
+            <Input id="lastName" label="Last name" type="text" placeholder="Doe" required error={errors.lastName?.message} {...register('lastName')} />
+          </div>
+
           <Input id="email" label="Email address" type="email" placeholder="you@example.com" required error={errors.email?.message} {...register('email')} />
-          <Input id="password" label="Password" type="password" placeholder="••••••••" required error={errors.password?.message} {...register('password')} />
-          <Input id="confirm" label="Confirm password" type="password" placeholder="••••••••" required error={errors.confirm?.message} {...register('confirm')} />
-          <Button type="submit" disabled={isSubmitting} className="mt-1">
-            {isSubmitting ? 'Creating account...' : 'Create account'}
+
+          <Input id="phone" label="Phone number" type="tel" placeholder="+1 (555) 000-0000" required error={errors.phone?.message} {...register('phone')} />
+
+          <div className="grid grid-cols-2 gap-4">
+            <Input id="city" label="City" type="text" placeholder="New York" required error={errors.city?.message} {...register('city')} />
+            <Input id="country" label="Country" type="text" placeholder="United States" required error={errors.country?.message} {...register('country')} />
+          </div>
+
+          <div>
+            <label htmlFor="additionalInfo" className="block text-sm font-medium text-primary mb-2">Additional Information</label>
+            <textarea
+              id="additionalInfo"
+              placeholder="Tell us more about yourself (optional)"
+              className="w-full px-3 py-2 text-sm border border-zinc-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-200 resize-none"
+              rows="3"
+              {...register('additionalInfo')}
+            />
+          </div>
+
+          <div className="grid grid-cols-2 gap-4">
+            <Input id="password" label="Password" type="password" placeholder="••••••••" required error={errors.password?.message} {...register('password')} />
+            <Input id="confirm" label="Confirm password" type="password" placeholder="••••••••" required error={errors.confirm?.message} {...register('confirm')} />
+          </div>
+
+          <Button type="submit" disabled={isSubmitting} className="mt-2">
+            {isSubmitting ? 'Creating account...' : 'Register user'}
           </Button>
           {errors.root && <p className="text-xs text-red-400 text-center">{errors.root.message}</p>}
         </form>

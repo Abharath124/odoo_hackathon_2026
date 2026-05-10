@@ -33,6 +33,8 @@ export default function ExpenseInvoice() {
   const [loading, setLoading] = useState(false)
   const [showCreateModal, setShowCreateModal] = useState(false)
   const [showAddItemModal, setShowAddItemModal] = useState(false)
+  const [showPaymentModal, setShowPaymentModal] = useState(false)
+  const [paymentMethod, setPaymentMethod] = useState('credit_card')
   const [newItem, setNewItem] = useState({ category: '', description: '', qtyDetails: '', unitCost: 0, amount: 0 })
 
   useEffect(() => {
@@ -65,12 +67,20 @@ export default function ExpenseInvoice() {
     } catch (_) {}
   }
 
-  const markPaid = async () => {
+  const markPaid = async (method) => {
     if (!selectedInvoice) return
     try {
-      await api.patch(`/invoices/${selectedTripId}/${selectedInvoice.id}/status`, { paymentStatus: 'paid' })
-      setSelectedInvoice((prev) => ({ ...prev, paymentStatus: 'paid' }))
+      await api.patch(`/invoices/${selectedTripId}/${selectedInvoice.id}/status`, { 
+        paymentStatus: 'paid',
+        paymentMethod: method 
+      })
+      setSelectedInvoice((prev) => ({ ...prev, paymentStatus: 'paid', paymentMethod: method }))
+      setShowPaymentModal(false)
     } catch (_) {}
+  }
+
+  const handleMarkPaidClick = () => {
+    setShowPaymentModal(true)
   }
 
   const createInvoice = async () => {
@@ -409,7 +419,7 @@ export default function ExpenseInvoice() {
               <button onClick={() => setShowAddItemModal(true)} className="flex items-center gap-2 px-5 py-2.5 rounded-xl text-sm font-medium text-white" style={{ background: '#4285F4' }}><Plus size={14} /> Add Expense Item</button>
               <button onClick={downloadInvoicePDF} className="flex items-center gap-2 px-5 py-2.5 rounded-xl border border-zinc-200 text-sm font-medium text-secondary hover:bg-zinc-50 transition-all"><Download size={14} /> Download Invoice</button>
               <button onClick={downloadInvoicePDF} className="flex items-center gap-2 px-5 py-2.5 rounded-xl border border-zinc-200 text-sm font-medium text-secondary hover:bg-zinc-50 transition-all"><FileText size={14} /> Export as PDF</button>
-              <button onClick={markPaid} disabled={selectedInvoice.paymentStatus === 'paid'} className="flex items-center gap-2 px-5 py-2.5 rounded-xl text-sm font-medium text-white ml-auto hover:opacity-90 transition-all disabled:opacity-60" style={{ background: selectedInvoice.paymentStatus === 'paid' ? '#34A853' : '#4285F4' }}>
+              <button onClick={handleMarkPaidClick} disabled={selectedInvoice.paymentStatus === 'paid'} className="flex items-center gap-2 px-5 py-2.5 rounded-xl text-sm font-medium text-white ml-auto hover:opacity-90 transition-all disabled:opacity-60" style={{ background: selectedInvoice.paymentStatus === 'paid' ? '#34A853' : '#4285F4' }}>
                 <CheckCircle size={14} /> {selectedInvoice.paymentStatus === 'paid' ? 'Paid ✓' : 'Mark as paid'}
               </button>
             </div>
@@ -462,6 +472,39 @@ export default function ExpenseInvoice() {
               <button onClick={() => setShowAddItemModal(false)} className="flex-1 px-4 py-2.5 rounded-xl border border-zinc-200 text-sm font-medium text-secondary hover:bg-zinc-50 transition-all">Cancel</button>
               <button onClick={addItem} className="flex-1 px-4 py-2.5 rounded-xl text-sm font-medium text-white" style={{ background: '#4285F4' }}>Add Item</button>
             </div>
+          </div>
+        </div>
+      )}
+
+      {showPaymentModal && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50" onClick={() => setShowPaymentModal(false)}>
+          <div className="bg-white rounded-2xl p-6 w-96" onClick={(e) => e.stopPropagation()}>
+            <h3 className="text-lg font-bold text-primary mb-2">Select Payment Method</h3>
+            <p className="text-sm text-secondary mb-6">Amount to pay: <span className="font-bold text-primary">₹{Number(selectedInvoice?.grandTotal || 0).toFixed(2)}</span></p>
+            
+            <div className="flex flex-col gap-3 mb-6">
+              {[
+                { id: 'credit_card', label: 'Credit Card', icon: '💳' },
+                { id: 'debit_card', label: 'Debit Card', icon: '🏦' },
+                { id: 'upi', label: 'UPI', icon: '📱' },
+                { id: 'net_banking', label: 'Net Banking', icon: '🏛️' },
+                { id: 'wallet', label: 'Digital Wallet', icon: '👛' },
+                { id: 'cash', label: 'Cash', icon: '💵' },
+              ].map((method) => (
+                <button
+                  key={method.id}
+                  onClick={() => markPaid(method.id)}
+                  className="w-full p-4 rounded-lg border-2 border-zinc-200 hover:border-blue-400 hover:bg-blue-50 transition-all text-left flex items-center gap-3"
+                >
+                  <span className="text-2xl">{method.icon}</span>
+                  <span className="font-medium text-primary">{method.label}</span>
+                </button>
+              ))}
+            </div>
+
+            <button onClick={() => setShowPaymentModal(false)} className="w-full px-4 py-2.5 rounded-xl border border-zinc-200 text-sm font-medium text-secondary hover:bg-zinc-50 transition-all">
+              Cancel
+            </button>
           </div>
         </div>
       )}

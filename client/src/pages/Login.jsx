@@ -1,3 +1,4 @@
+import { useEffect } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { useDispatch } from 'react-redux'
 import { useForm } from 'react-hook-form'
@@ -8,6 +9,8 @@ import { Input } from '../components/ui/Input'
 import { Button } from '../components/ui/Button'
 import api from '../utils/api'
 import { setCredentials } from '../store/authSlice'
+import { fetchSiteSettings } from '../store/siteSlice'
+import BrandLogo from '../components/BrandLogo'
 
 const schema = z.object({
   email: z.string().min(1, 'Email is required').email('Invalid email address'),
@@ -21,9 +24,14 @@ export default function Login() {
     resolver: zodResolver(schema),
   })
 
+  useEffect(() => {
+    dispatch(fetchSiteSettings())
+  }, [dispatch])
+
   const onSubmit = async (data) => {
     try {
       const res = await api.post('/auth/login', data)
+      
       dispatch(setCredentials({ user: res.data.user, token: res.data.token }))
       navigate(res.data.user.role === 'admin' ? '/admin/dashboard' : '/home')
     } catch (err) {
@@ -35,8 +43,8 @@ export default function Login() {
     <Card className="max-w-sm w-full">
 
       <CardHeader>
-        <div className="w-9 h-9 rounded-xl bg-primary flex items-center justify-center mb-4">
-          <span className="text-white text-sm">⬡</span>
+        <div className="flex justify-center mb-4">
+          <BrandLogo size="lg" />
         </div>
         <CardTitle description="Sign in to your account">Welcome back</CardTitle>
       </CardHeader>
