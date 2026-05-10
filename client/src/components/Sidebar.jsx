@@ -5,6 +5,15 @@ import api from '../utils/api'
 
 const navItems = [
   { label: 'Dashboard', path: '/home' },
+  { label: 'My Trips', path: '/trips' },
+  { label: 'Itinerary', path: '/itinerary' },
+  { label: 'Budget', path: '/budget' },
+  { label: 'Packing Checklist', path: '/packing' },
+  { label: 'Notes', path: '/notes' },
+  { label: 'Activities', path: '/activities' },
+  { label: 'Community', path: '/community' },
+  { label: 'Expense & Invoice', path: '/invoice' },
+  { label: 'Profile', path: '/profile' },
 ]
 
 export default function Sidebar({ open, onClose }) {
@@ -25,17 +34,17 @@ export default function Sidebar({ open, onClose }) {
       )}
 
       <aside className={`
-        fixed top-0 left-0 h-full w-56 bg-white border-r border-zinc-100
-        flex flex-col py-8 px-4 gap-1 z-30 transition-transform duration-200
-        lg:static lg:translate-x-0 lg:z-auto
-        ${open ? 'translate-x-0' : '-translate-x-full'}
+        h-full w-56 bg-white border-r border-zinc-100 shrink-0
+        flex flex-col py-8 px-4 gap-1 transition-transform duration-200
+        fixed top-0 left-0 z-30 lg:relative lg:z-auto lg:translate-x-0
+        ${open ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'}
       `}>
         <span className="text-sm font-semibold text-primary px-3 mb-6 tracking-tight flex items-center gap-2">
           <span className="bg-primary w-6 h-6 rounded-md flex items-center justify-center text-white text-xs">⬡</span>
           {site_name}
         </span>
 
-        <nav className="flex flex-col gap-1 flex-1">
+        <nav className="flex flex-col gap-1 flex-1 overflow-y-auto">
           {navItems.map(({ label, path }) => (
             <NavLink
               key={path}

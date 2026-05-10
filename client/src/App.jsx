@@ -19,6 +19,18 @@ import NotFound from './pages/NotFound'
 import Terms from './pages/Terms'
 import Privacy from './pages/Privacy'
 import FAQ from './pages/FAQ'
+import MyTrips from './pages/MyTrips'
+import CreateTrip from './pages/CreateTrip'
+import Itinerary from './pages/Itinerary'
+import ItineraryBuilder from './pages/ItineraryBuilder'
+import ItineraryView from './pages/ItineraryView'
+import Budget from './pages/Budget'
+import PackingChecklist from './pages/PackingChecklist'
+import Notes from './pages/Notes'
+import ActivitySearch from './pages/ActivitySearch'
+import Community from './pages/Community'
+import ExpenseInvoice from './pages/ExpenseInvoice'
+import UserProfile from './pages/UserProfile'
 import AdminDashboard from './pages/admin/AdminDashboard'
 import AdminUsers from './pages/admin/AdminUsers'
 import AdminSettings from './pages/admin/AdminSettings'
@@ -63,6 +75,18 @@ function App() {
         <Route element={<ProtectedRoute />}>
           <Route element={<AppLayout />}>
             <Route path="/home" element={<Home />} />
+            <Route path="/trips" element={<MyTrips />} />
+            <Route path="/trips/new" element={<CreateTrip />} />
+            <Route path="/itinerary" element={<Itinerary />} />
+            <Route path="/itinerary/build" element={<ItineraryBuilder />} />
+            <Route path="/itinerary/view" element={<ItineraryView />} />
+            <Route path="/budget" element={<Budget />} />
+            <Route path="/packing" element={<PackingChecklist />} />
+            <Route path="/notes" element={<Notes />} />
+            <Route path="/activities" element={<ActivitySearch />} />
+            <Route path="/community" element={<Community />} />
+            <Route path="/invoice" element={<ExpenseInvoice />} />
+            <Route path="/profile" element={<UserProfile />} />
           </Route>
         </Route>
 

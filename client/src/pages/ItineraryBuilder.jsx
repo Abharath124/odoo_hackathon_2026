@@ -1,8 +1,10 @@
+import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useForm, useFieldArray } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
 import { Plus, Trash2 } from 'lucide-react'
+import api from '../utils/api'
 
 const sectionSchema = z.object({
   title: z.string().min(1, 'Title is required'),
@@ -10,12 +12,11 @@ const sectionSchema = z.object({
   dateFrom: z.string().min(1, 'Start date is required'),
   dateTo: z.string().min(1, 'End date is required'),
   budget: z.string().min(1, 'Budget is required').refine((v) => !isNaN(Number(v)) && Number(v) >= 0, 'Must be a valid amount'),
-}).refine((d) => new Date(d.dateFrom) <= new Date(d.dateTo), {
-  message: 'End date must be after start date',
-  path: ['dateTo'],
-})
+}).refine((d) => new Date(d.dateFrom) <= new Date(d.dateTo), { message: 'End date must be after start date', path: ['dateTo'] })
 
 const schema = z.object({
+  tripId: z.string().min(1, 'Select a trip'),
+  title: z.string().min(2, 'Itinerary title is required'),
   sections: z.array(sectionSchema).min(1, 'At least one section is required'),
 })
 
@@ -25,60 +26,89 @@ function FieldError({ message }) {
 
 export default function ItineraryBuilder() {
   const navigate = useNavigate()
+  const [trips, setTrips] = useState([])
+  const [error, setError] = useState('')
+
+  useEffect(() => {
+    api.get('/trips').then((r) => setTrips(r.data.trips || [])).catch(() => {})
+  }, [])
+
   const { register, control, handleSubmit, formState: { errors, isSubmitting } } = useForm({
     resolver: zodResolver(schema),
     defaultValues: {
-      sections: [
-        { title: 'Section 1', description: '', dateFrom: '', dateTo: '', budget: '' },
-        { title: 'Section 2', description: '', dateFrom: '', dateTo: '', budget: '' },
-        { title: 'Section 3', description: '', dateFrom: '', dateTo: '', budget: '' },
-      ],
+      tripId: '',
+      title: '',
+      sections: [{ title: 'Section 1', description: '', dateFrom: '', dateTo: '', budget: '' }],
     },
   })
 
   const { fields, append, remove } = useFieldArray({ control, name: 'sections' })
 
-  const onSubmit = () => navigate('/itinerary/view')
+  const onSubmit = async (data) => {
+    setError('')
+    try {
+      await api.post('/itineraries', {
+        tripId: data.tripId,
+        title: data.title,
+        sections: data.sections.map((s) => ({
+          title: s.title,
+          description: s.description,
+          startDate: s.dateFrom,
+          endDate: s.dateTo,
+          budget: s.budget,
+        })),
+      })
+      navigate('/itinerary')
+    } catch (err) {
+      setError(err.response?.data?.message || 'Failed to save itinerary')
+    }
+  }
 
   const inputCls = (err) =>
     `text-xs text-primary bg-transparent focus:outline-none w-full transition-all ${err ? 'placeholder:text-red-300' : 'placeholder:text-zinc-400'}`
 
   return (
     <div className="flex flex-col gap-5 pb-10 max-w-2xl mx-auto">
-
       <div>
         <h1 className="text-xl font-bold text-primary">Build Itinerary</h1>
         <p className="text-sm text-secondary mt-0.5">Add sections for each part of your trip</p>
       </div>
 
+      {error && <p className="text-sm text-red-500 bg-red-50 px-4 py-2.5 rounded-lg">{error}</p>}
+
       <form onSubmit={handleSubmit(onSubmit)} className="flex flex-col gap-5">
+        <div className="bg-white border border-zinc-200 rounded-2xl p-5 flex flex-col gap-4">
+          <div className="flex flex-col gap-1">
+            <label className="text-xs font-medium text-secondary">Select Trip</label>
+            <select {...register('tripId')} className="border border-zinc-200 rounded-lg px-3.5 py-2.5 text-sm text-primary bg-zinc-50 focus:outline-none focus:ring-2 focus:ring-blue-200 focus:border-transparent transition-all">
+              <option value="">-- Select a trip --</option>
+              {trips.map((t) => <option key={t.id} value={t.id}>{t.title} — {t.destination}</option>)}
+            </select>
+            <FieldError message={errors.tripId?.message} />
+          </div>
+          <div className="flex flex-col gap-1">
+            <label className="text-xs font-medium text-secondary">Itinerary Title</label>
+            <input {...register('title')} placeholder="e.g. Day-by-day Europe Plan" className="border border-zinc-200 rounded-lg px-3.5 py-2.5 text-sm text-primary bg-zinc-50 focus:outline-none focus:ring-2 focus:ring-blue-200 focus:border-transparent transition-all" />
+            <FieldError message={errors.title?.message} />
+          </div>
+        </div>
+
         {fields.map((field, idx) => {
           const err = errors.sections?.[idx]
           return (
             <div key={field.id} className="bg-white border border-zinc-200 rounded-2xl p-5 flex flex-col gap-4">
-
               <div className="flex items-center justify-between">
                 <div className="flex flex-col gap-0.5">
-                  <input
-                    {...register(`sections.${idx}.title`)}
-                    className={`text-sm font-semibold text-primary bg-transparent focus:outline-none border-b transition-all w-40 ${err?.title ? 'border-red-400' : 'border-transparent focus:border-zinc-300'}`}
-                  />
+                  <input {...register(`sections.${idx}.title`)} className={`text-sm font-semibold text-primary bg-transparent focus:outline-none border-b transition-all w-40 ${err?.title ? 'border-red-400' : 'border-transparent focus:border-zinc-300'}`} />
                   <FieldError message={err?.title?.message} />
                 </div>
                 {fields.length > 1 && (
-                  <button type="button" onClick={() => remove(idx)} className="p-1.5 rounded-lg text-secondary hover:text-red-500 hover:bg-red-50 transition-colors">
-                    <Trash2 size={13} />
-                  </button>
+                  <button type="button" onClick={() => remove(idx)} className="p-1.5 rounded-lg text-secondary hover:text-red-500 hover:bg-red-50 transition-colors"><Trash2 size={13} /></button>
                 )}
               </div>
 
               <div className="flex flex-col gap-0.5">
-                <textarea
-                  rows={2}
-                  {...register(`sections.${idx}.description`)}
-                  placeholder="All the necessary information about this section. This can be anything like travel section, hotel or any other activity"
-                  className={`w-full text-sm text-secondary bg-zinc-50 border rounded-lg px-3.5 py-2.5 resize-none placeholder:text-zinc-400 focus:outline-none focus:ring-2 focus:border-transparent transition-all ${err?.description ? 'border-red-400 focus:ring-red-200' : 'border-zinc-100 focus:ring-blue-200'}`}
-                />
+                <textarea rows={2} {...register(`sections.${idx}.description`)} placeholder="Description of this section..." className={`w-full text-sm text-secondary bg-zinc-50 border rounded-lg px-3.5 py-2.5 resize-none placeholder:text-zinc-400 focus:outline-none focus:ring-2 focus:border-transparent transition-all ${err?.description ? 'border-red-400 focus:ring-red-200' : 'border-zinc-100 focus:ring-blue-200'}`} />
                 <FieldError message={err?.description?.message} />
               </div>
 
@@ -92,7 +122,6 @@ export default function ItineraryBuilder() {
                   </div>
                   <FieldError message={err?.dateFrom?.message || err?.dateTo?.message} />
                 </div>
-
                 <div className="flex flex-col gap-0.5 flex-1">
                   <div className={`flex items-center gap-2 border rounded-lg px-3.5 py-2.5 bg-zinc-50 ${err?.budget ? 'border-red-400' : 'border-zinc-200'}`}>
                     <span className="text-xs text-secondary whitespace-nowrap">Budget:</span>
@@ -102,29 +131,18 @@ export default function ItineraryBuilder() {
                   <FieldError message={err?.budget?.message} />
                 </div>
               </div>
-
             </div>
           )
         })}
 
-        <button
-          type="button"
-          onClick={() => append({ title: `Section ${fields.length + 1}`, description: '', dateFrom: '', dateTo: '', budget: '' })}
-          className="flex items-center justify-center gap-2 w-full py-3 rounded-xl border-2 border-dashed border-zinc-300 text-sm font-medium text-secondary hover:border-blue-400 hover:text-blue-500 hover:bg-blue-50 transition-all"
-        >
+        <button type="button" onClick={() => append({ title: `Section ${fields.length + 1}`, description: '', dateFrom: '', dateTo: '', budget: '' })} className="flex items-center justify-center gap-2 w-full py-3 rounded-xl border-2 border-dashed border-zinc-300 text-sm font-medium text-secondary hover:border-blue-400 hover:text-blue-500 hover:bg-blue-50 transition-all">
           <Plus size={15} /> Add another Section
         </button>
 
-        <button
-          type="submit"
-          disabled={isSubmitting}
-          className="w-full py-3 rounded-xl text-sm font-medium text-white hover:opacity-90 transition-all disabled:opacity-50"
-          style={{ background: '#4285F4' }}
-        >
+        <button type="submit" disabled={isSubmitting} className="w-full py-3 rounded-xl text-sm font-medium text-white hover:opacity-90 transition-all disabled:opacity-50" style={{ background: '#4285F4' }}>
           {isSubmitting ? 'Saving...' : 'Save Itinerary'}
         </button>
       </form>
-
     </div>
   )
 }

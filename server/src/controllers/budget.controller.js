@@ -2,6 +2,7 @@ const { Op } = require('sequelize')
 const Itinerary = require('../models/Itinerary')
 const DayPlan = require('../models/DayPlan')
 const Expense = require('../models/Expense')
+const Trip = require('../models/Trip')
 
 // associations
 DayPlan.hasMany(Expense, { foreignKey: 'dayPlanId', as: 'expenses', onDelete: 'CASCADE' })
@@ -17,6 +18,7 @@ const getBudget = async (req, res) => {
 
     const itinerary = await Itinerary.findOne({
       where: { id: itineraryId, userId: req.user.id },
+      include: [{ model: Trip, as: 'trip', attributes: ['id', 'title', 'budget'] }],
     })
     if (!itinerary) return res.status(404).json({ message: 'Itinerary not found' })
 

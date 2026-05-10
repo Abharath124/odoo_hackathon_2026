@@ -12,7 +12,7 @@ const PostComment = sequelize.define('PostComment', {
     allowNull: false,
   },
   userId: {
-    type: DataTypes.UUID,
+    type: DataTypes.INTEGER,
     allowNull: false,
   },
   content: {

@@ -8,7 +8,7 @@ const Post = sequelize.define('Post', {
     primaryKey: true,
   },
   userId: {
-    type: DataTypes.UUID,
+    type: DataTypes.INTEGER,
     allowNull: false,
   },
   title: {

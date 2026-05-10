@@ -17,6 +17,7 @@ const budgetRoutes = require('./src/routes/budget.routes')
 const checklistRoutes = require('./src/routes/checklist.routes')
 const notesRoutes = require('./src/routes/notes.routes')
 const invoiceRoutes = require('./src/routes/invoice.routes')
+const communityRoutes = require('./src/routes/community.routes')
 
 const app = express()
 
@@ -36,6 +37,7 @@ app.use('/api/budget', budgetRoutes)
 app.use('/api/checklist', checklistRoutes)
 app.use('/api/notes', notesRoutes)
 app.use('/api/invoices', invoiceRoutes)
+app.use('/api/community', communityRoutes)
 
 app.get('/api/health', (_, res) => res.json({ status: 'ok' }))
 

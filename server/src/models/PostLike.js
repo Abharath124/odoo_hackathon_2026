@@ -12,7 +12,7 @@ const PostLike = sequelize.define('PostLike', {
     allowNull: false,
   },
   userId: {
-    type: DataTypes.UUID,
+    type: DataTypes.INTEGER,
     allowNull: false,
   },
 }, {

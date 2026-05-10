@@ -5,6 +5,7 @@ const Trip = require('../models/Trip')
 // associations
 Itinerary.hasMany(ItinerarySection, { foreignKey: 'itineraryId', as: 'sections', onDelete: 'CASCADE' })
 ItinerarySection.belongsTo(Itinerary, { foreignKey: 'itineraryId' })
+Itinerary.belongsTo(Trip, { foreignKey: 'tripId', as: 'trip' })
 
 // GET /api/itineraries?tripId=1
 const getItineraries = async (req, res) => {
@@ -15,7 +16,10 @@ const getItineraries = async (req, res) => {
 
     const itineraries = await Itinerary.findAll({
       where,
-      include: [{ model: ItinerarySection, as: 'sections', order: [['order', 'ASC']] }],
+      include: [
+        { model: ItinerarySection, as: 'sections', order: [['order', 'ASC']] },
+        { model: Trip, as: 'trip', attributes: ['id', 'title', 'budget'] },
+      ],
       order: [['createdAt', 'DESC']],
     })
     res.json({ itineraries })
