@@ -51,6 +51,9 @@ function App() {
     root.style.setProperty('--primary', site.primary_color)
     root.style.setProperty('--secondary', site.secondary_color)
     if (site.site_name) document.title = site.site_name
+    const favicon = document.querySelector('link[rel="icon"]') || Object.assign(document.createElement('link'), { rel: 'icon' })
+    favicon.href = site.logo ? `http://localhost:5000${site.logo}` : '/vite.svg'
+    document.head.appendChild(favicon)
   }, [site])
 
   return (

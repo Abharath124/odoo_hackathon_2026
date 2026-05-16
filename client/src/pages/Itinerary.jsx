@@ -33,7 +33,7 @@ export default function Itinerary() {
           <h1 className="text-xl font-bold text-primary">My Itineraries</h1>
           <p className="text-sm text-secondary mt-0.5">Organize your trip day by day</p>
         </div>
-        <button onClick={() => navigate('/itinerary/build')} className="flex items-center gap-2 px-4 py-2.5 rounded-lg text-sm font-medium text-white hover:opacity-90 transition-all" style={{ background: '#4285F4' }}>
+        <button onClick={() => navigate('/itinerary/build')} className="flex items-center gap-2 px-4 py-2.5 rounded-lg text-sm font-medium text-white bg-primary hover:opacity-90 transition-all">
           <Plus size={15} /> New Itinerary
         </button>
       </div>
@@ -44,7 +44,7 @@ export default function Itinerary() {
         <div className="flex flex-col items-center justify-center py-24 gap-3">
           <span className="text-4xl">🗺️</span>
           <p className="text-sm text-secondary">No itineraries yet.</p>
-          <button onClick={() => navigate('/itinerary/build')} className="text-sm font-medium px-4 py-2 rounded-lg text-white" style={{ background: '#4285F4' }}>Build your first itinerary</button>
+          <button onClick={() => navigate('/itinerary/build')} className="text-sm font-medium px-4 py-2 rounded-lg text-white bg-primary hover:opacity-90 transition-all">Build your first itinerary</button>
         </div>
       ) : (
         <div className="flex flex-col gap-4">

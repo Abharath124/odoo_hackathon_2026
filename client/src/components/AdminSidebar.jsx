@@ -2,6 +2,7 @@ import { NavLink, useNavigate } from 'react-router-dom'
 import { useDispatch, useSelector } from 'react-redux'
 import { logout } from '../store/authSlice'
 import api from '../utils/api'
+import BrandLogo from './BrandLogo'
 
 const navItems = [
   { label: 'Dashboard', path: '/admin/dashboard' },
@@ -15,7 +16,7 @@ export default function AdminSidebar({ open, onClose }) {
   const { site_name } = useSelector((state) => state.site)
 
   const handleLogout = async () => {
-    try { await api.post('/auth/logout') } catch (_) {}
+    try { await api.post('/auth/logout') } catch (_) { }
     dispatch(logout())
     navigate('/login')
   }
@@ -33,7 +34,7 @@ export default function AdminSidebar({ open, onClose }) {
         ${open ? 'translate-x-0' : '-translate-x-full'}
       `}>
         <div className="flex items-center gap-2 px-3 mb-8">
-          <span className="w-7 h-7 rounded-lg bg-white/10 flex items-center justify-center text-white text-xs shrink-0">⬡</span>
+          <BrandLogo />
           <span className="text-sm font-semibold text-white tracking-tight">{site_name}</span>
         </div>
 
@@ -44,10 +45,9 @@ export default function AdminSidebar({ open, onClose }) {
               to={path}
               onClick={onClose}
               className={({ isActive }) =>
-                `text-sm px-3 py-2 rounded-lg transition-colors ${
-                  isActive
-                    ? 'bg-white/15 text-white font-medium'
-                    : 'text-white/50 hover:text-white hover:bg-white/10'
+                `text-sm px-3 py-2 rounded-lg transition-colors ${isActive
+                  ? 'bg-white/15 text-white font-medium'
+                  : 'text-white/50 hover:text-white hover:bg-white/10'
                 }`
               }
             >

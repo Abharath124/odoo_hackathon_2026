@@ -106,7 +106,7 @@ export default function MyTrips() {
         </div>
       )}
 
-      <button onClick={() => navigate('/trips/new')} className="fixed bottom-6 right-6 flex items-center gap-2 px-4 py-2.5 rounded-full text-sm font-medium text-white shadow-lg hover:shadow-xl hover:scale-105 transition-all" style={{ background: '#4285F4' }}>
+      <button onClick={() => navigate('/trips/new')} className="fixed bottom-6 right-6 flex items-center gap-2 px-4 py-2.5 rounded-full text-sm font-medium text-white bg-primary shadow-lg hover:shadow-xl hover:scale-105 transition-all">
         <Plus size={16} /> Plan New Trip
       </button>
     </div>

@@ -4,6 +4,8 @@ import { useForm, useFieldArray } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
 import { Plus, Trash2 } from 'lucide-react'
+import { Input } from '../components/ui/Input'
+import { Button } from '../components/ui/Button'
 import api from '../utils/api'
 
 const sectionSchema = z.object({
@@ -19,10 +21,6 @@ const schema = z.object({
   title: z.string().min(2, 'Itinerary title is required'),
   sections: z.array(sectionSchema).min(1, 'At least one section is required'),
 })
-
-function FieldError({ message }) {
-  return message ? <p className="text-xs text-red-400 mt-0.5">{message}</p> : null
-}
 
 export default function ItineraryBuilder() {
   const navigate = useNavigate()
@@ -97,17 +95,19 @@ export default function ItineraryBuilder() {
         <div className="bg-white border border-zinc-200 rounded-2xl p-5 flex flex-col gap-4">
           <div className="flex flex-col gap-1">
             <label className="text-xs font-medium text-secondary">Select Trip</label>
-            <select {...register('tripId')} className="border border-zinc-200 rounded-lg px-3.5 py-2.5 text-sm text-primary bg-zinc-50 focus:outline-none focus:ring-2 focus:ring-blue-200 focus:border-transparent transition-all">
+            <select {...register('tripId')} className="border border-zinc-200 rounded-lg px-3.5 py-2.5 text-sm text-primary bg-zinc-50 focus:outline-none focus:ring-2 focus:ring-primary focus:bg-white focus:border-transparent transition-all">
               <option value="">-- Select a trip --</option>
               {trips.map((t) => <option key={t.id} value={t.id}>{t.title} — {t.destination}</option>)}
             </select>
-            <FieldError message={errors.tripId?.message} />
+            {errors.tripId && <p className="text-xs text-red-400 mt-0.5">{errors.tripId.message}</p>}
           </div>
-          <div className="flex flex-col gap-1">
-            <label className="text-xs font-medium text-secondary">Itinerary Title</label>
-            <input {...register('title')} placeholder="e.g. Day-by-day Europe Plan" className="border border-zinc-200 rounded-lg px-3.5 py-2.5 text-sm text-primary bg-zinc-50 focus:outline-none focus:ring-2 focus:ring-blue-200 focus:border-transparent transition-all" />
-            <FieldError message={errors.title?.message} />
-          </div>
+          <Input
+            id="title"
+            label="Itinerary Title"
+            placeholder="e.g. Day-by-day Europe Plan"
+            error={errors.title?.message}
+            {...register('title')}
+          />
         </div>
 
         {fields.map((field, idx) => {
@@ -117,7 +117,7 @@ export default function ItineraryBuilder() {
               <div className="flex items-center justify-between">
                 <div className="flex flex-col gap-0.5">
                   <input {...register(`sections.${idx}.title`)} className={`text-sm font-semibold text-primary bg-transparent focus:outline-none border-b transition-all w-40 ${err?.title ? 'border-red-400' : 'border-transparent focus:border-zinc-300'}`} />
-                  <FieldError message={err?.title?.message} />
+                  {err?.title && <p className="text-xs text-red-400 mt-0.5">{err.title.message}</p>}
                 </div>
                 {fields.length > 1 && (
                   <button type="button" onClick={() => remove(idx)} className="p-1.5 rounded-lg text-secondary hover:text-red-500 hover:bg-red-50 transition-colors"><Trash2 size={13} /></button>
@@ -125,8 +125,8 @@ export default function ItineraryBuilder() {
               </div>
 
               <div className="flex flex-col gap-0.5">
-                <textarea rows={2} {...register(`sections.${idx}.description`)} placeholder="Description of this section..." className={`w-full text-sm text-secondary bg-zinc-50 border rounded-lg px-3.5 py-2.5 resize-none placeholder:text-zinc-400 focus:outline-none focus:ring-2 focus:border-transparent transition-all ${err?.description ? 'border-red-400 focus:ring-red-200' : 'border-zinc-100 focus:ring-blue-200'}`} />
-                <FieldError message={err?.description?.message} />
+                <textarea rows={2} {...register(`sections.${idx}.description`)} placeholder="Description of this section..." className={`w-full text-sm text-primary bg-zinc-50 border rounded-lg px-3.5 py-2.5 resize-none placeholder:text-secondary/50 focus:outline-none focus:ring-2 focus:bg-white focus:border-transparent transition-all ${err?.description ? 'border-red-400 focus:ring-red-400' : 'border-zinc-100 focus:ring-primary'}`} />
+                {err?.description && <p className="text-xs text-red-400 mt-0.5">{err.description.message}</p>}
               </div>
 
               <div className="flex items-start gap-3">
@@ -137,7 +137,7 @@ export default function ItineraryBuilder() {
                     <span className="text-xs text-secondary">to</span>
                     <input type="date" {...register(`sections.${idx}.dateTo`)} className={inputCls(err?.dateTo)} />
                   </div>
-                  <FieldError message={err?.dateFrom?.message || err?.dateTo?.message} />
+                  {(err?.dateFrom || err?.dateTo) && <p className="text-xs text-red-400 mt-0.5">{err?.dateFrom?.message || err?.dateTo?.message}</p>}
                 </div>
                 <div className="flex flex-col gap-0.5 flex-1">
                   <div className={`flex items-center gap-2 border rounded-lg px-3.5 py-2.5 bg-zinc-50 ${err?.budget ? 'border-red-400' : 'border-zinc-200'}`}>
@@ -145,7 +145,7 @@ export default function ItineraryBuilder() {
                     <input type="number" placeholder="0.00" {...register(`sections.${idx}.budget`)} className={inputCls(err?.budget)} />
                     <span className="text-xs text-secondary">$</span>
                   </div>
-                  <FieldError message={err?.budget?.message} />
+                  {err?.budget && <p className="text-xs text-red-400 mt-0.5">{err.budget.message}</p>}
                 </div>
               </div>
             </div>
@@ -156,9 +156,9 @@ export default function ItineraryBuilder() {
           <Plus size={15} /> Add another Section
         </button>
 
-        <button type="submit" disabled={isSubmitting} className="w-full py-3 rounded-xl text-sm font-medium text-white hover:opacity-90 transition-all disabled:opacity-50" style={{ background: '#4285F4' }}>
+        <Button type="submit" disabled={isSubmitting}>
           {isSubmitting ? 'Saving...' : 'Save Itinerary'}
-        </button>
+        </Button>
       </form>
     </div>
   )

@@ -78,7 +78,7 @@ export default function ActivitySearch() {
                   <div className="flex items-center gap-4">
                     <div className="w-11 h-11 rounded-xl flex items-center justify-center text-lg shrink-0" style={{ background: `${color}15` }}>
                       {item.image ? (
-                        <img src={`http://localhost:5000${item.image}`} className="w-full h-full object-cover rounded-xl" alt={item.name} />
+                        <img src={`http://localhost:5000${item.image}`} className="w-full h-full object-cover rounded-xl" alt={item.name} onError={(e) => { e.target.style.display = 'none' }} />
                       ) : (
                         <IconComponent size={20} style={{ color }} />
                       )}

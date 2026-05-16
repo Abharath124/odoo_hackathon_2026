@@ -4,6 +4,8 @@ import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
 import { Search, SlidersHorizontal, ArrowUpDown, LayoutGrid, Heart, MessageCircle, Share2, Plus, X } from 'lucide-react'
+import { Input } from '../components/ui/Input'
+import { Button } from '../components/ui/Button'
 import api from '../utils/api'
 
 const postSchema = z.object({
@@ -57,7 +59,7 @@ function PostCard({ post, currentUserId, onLike, onComment, onDelete }) {
     <div className="flex items-start gap-4">
       <div className="w-11 h-11 rounded-full flex items-center justify-center text-sm font-bold text-white shrink-0 mt-1 overflow-hidden" style={{ background: color }}>
         {post.author?.avatar
-          ? <img src={`http://localhost:5000${post.author.avatar}`} className="w-full h-full object-cover" alt={post.author.name} />
+          ? <img src={`http://localhost:5000${post.author.avatar}`} className="w-full h-full object-cover" alt={post.author.name} onError={(e) => { e.target.style.display = 'none' }} />
           : initials}
       </div>
 
@@ -105,8 +107,10 @@ function PostCard({ post, currentUserId, onLike, onComment, onDelete }) {
           <div className="flex flex-col gap-2 pt-2 border-t border-zinc-50">
             {comments.map(c => (
               <div key={c.id} className="flex items-start gap-2 group">
-                <div className="w-6 h-6 rounded-full bg-zinc-200 flex items-center justify-center text-xs font-semibold text-secondary shrink-0">
-                  {c.author?.name?.[0]?.toUpperCase()}
+                <div className="w-6 h-6 rounded-full bg-zinc-200 flex items-center justify-center text-xs font-semibold text-secondary shrink-0 overflow-hidden">
+                  {c.author?.avatar
+                    ? <img src={`http://localhost:5000${c.author.avatar}`} className="w-full h-full object-cover" alt={c.author.name} onError={(e) => { e.target.style.display = 'none' }} />
+                    : c.author?.name?.[0]?.toUpperCase() || '?'}
                 </div>
                 <div className="flex-1 bg-zinc-50 rounded-lg px-3 py-2">
                   <p className="text-xs font-semibold text-primary">{c.author?.name}</p>
@@ -127,7 +131,7 @@ function PostCard({ post, currentUserId, onLike, onComment, onDelete }) {
                 placeholder="Write a comment..."
                 className="flex-1 border border-zinc-200 rounded-lg px-3 py-1.5 text-xs focus:outline-none focus:ring-2 focus:ring-blue-200 focus:border-transparent transition-all"
               />
-              <button onClick={submitComment} disabled={submitting} className="text-xs font-medium px-3 py-1.5 rounded-lg text-white disabled:opacity-50" style={{ background: '#4285F4' }}>
+              <button onClick={submitComment} disabled={submitting} className="text-xs font-medium px-3 py-1.5 rounded-lg text-white bg-primary hover:opacity-90 disabled:opacity-50 transition-all">
                 Post
               </button>
             </div>
@@ -225,24 +229,31 @@ export default function Community() {
 
       <div className="flex items-center justify-between">
         <h1 className="text-lg font-bold text-primary">Community</h1>
-        <button onClick={() => setShowForm(v => !v)} className="flex items-center gap-1.5 px-4 py-2 rounded-lg text-sm font-medium text-white hover:opacity-90 transition-all" style={{ background: '#4285F4' }}>
+        <button onClick={() => setShowForm(v => !v)} className="flex items-center gap-1.5 px-4 py-2 rounded-lg text-sm font-medium text-white bg-primary hover:opacity-90 transition-all">
           <Plus size={14} /> {showForm ? 'Cancel' : 'New Post'}
         </button>
       </div>
 
       {showForm && (
         <form onSubmit={handleSubmit(onSubmit)} className="bg-white border border-zinc-200 rounded-2xl p-5 flex flex-col gap-3">
-          <div>
-            <input {...register('title')} placeholder="Post title *" className={`w-full border rounded-lg px-3.5 py-2.5 text-sm focus:outline-none focus:ring-2 focus:border-transparent transition-all ${errors.title ? 'border-red-400 focus:ring-red-200' : 'border-zinc-200 focus:ring-blue-200'}`} />
-            {errors.title && <p className="text-xs text-red-400 mt-0.5">{errors.title.message}</p>}
-          </div>
-          <div>
-            <textarea {...register('content')} rows={3} placeholder="Share your travel experience... *" className={`w-full border rounded-lg px-3.5 py-2.5 text-sm resize-none focus:outline-none focus:ring-2 focus:border-transparent transition-all ${errors.content ? 'border-red-400 focus:ring-red-200' : 'border-zinc-200 focus:ring-blue-200'}`} />
+          <Input
+            id="title"
+            placeholder="Post title *"
+            error={errors.title?.message}
+            {...register('title')}
+          />
+          <div className="flex flex-col gap-1">
+            <textarea
+              {...register('content')}
+              rows={3}
+              placeholder="Share your travel experience... *"
+              className={`w-full border rounded-lg px-3.5 py-2.5 text-sm text-primary bg-zinc-50 placeholder:text-secondary/50 resize-none focus:outline-none focus:ring-2 focus:bg-white focus:border-transparent transition-all ${errors.content ? 'border-red-400 focus:ring-red-400' : 'border-zinc-200 focus:ring-primary'}`}
+            />
             {errors.content && <p className="text-xs text-red-400 mt-0.5">{errors.content.message}</p>}
           </div>
           <div className="flex gap-3">
-            <input {...register('destination')} placeholder="Destination (e.g. Paris)" className="flex-1 border border-zinc-200 rounded-lg px-3.5 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-200 focus:border-transparent transition-all" />
-            <select {...register('category')} className="flex-1 border border-zinc-200 rounded-lg px-3.5 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-200 focus:border-transparent transition-all">
+            <Input id="destination" placeholder="Destination (e.g. Paris)" {...register('destination')} />
+            <select {...register('category')} className="flex-1 border border-zinc-200 rounded-lg px-3.5 py-2.5 text-sm text-primary bg-zinc-50 focus:outline-none focus:ring-2 focus:ring-primary focus:bg-white focus:border-transparent transition-all">
               {categoryOptions.map(opt => (
                 <option key={opt.value} value={opt.value}>{opt.label}</option>
               ))}
@@ -250,10 +261,12 @@ export default function Community() {
           </div>
           {error && <p className="text-xs text-red-400">{error}</p>}
           <div className="flex gap-2">
-            <button type="submit" disabled={isSubmitting} className="px-4 py-2 rounded-lg text-sm font-medium text-white hover:opacity-90 transition-all disabled:opacity-50" style={{ background: '#4285F4' }}>
+            <Button type="submit" disabled={isSubmitting} className="!w-auto px-4">
               {isSubmitting ? 'Posting...' : 'Post'}
-            </button>
-            <button type="button" onClick={() => { setShowForm(false); reset(); setError('') }} className="px-4 py-2 rounded-lg text-sm font-medium text-secondary border border-zinc-200 hover:bg-zinc-50 transition-all">Cancel</button>
+            </Button>
+            <Button type="button" variant="outline" onClick={() => { setShowForm(false); reset(); setError('') }} className="!w-auto px-4">
+              Cancel
+            </Button>
           </div>
         </form>
       )}

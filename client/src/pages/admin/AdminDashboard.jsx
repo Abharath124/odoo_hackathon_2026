@@ -1,4 +1,5 @@
 import { useState, useRef, useEffect } from 'react'
+import { useSelector } from 'react-redux'
 import {
   LineChart, Line, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid,
   BarChart, Bar,
@@ -43,6 +44,7 @@ function Dropdown({ label, options, value, onChange }) {
 }
 
 export default function AdminDashboard() {
+  const { primary_color, secondary_color } = useSelector((state) => state.site)
   const [activeTab, setActiveTab] = useState('Manage Users')
   const [search, setSearch] = useState('')
   const [groupBy, setGroupBy] = useState('None')
@@ -109,7 +111,7 @@ export default function AdminDashboard() {
         return (
           <div key={u.id} className="flex items-center gap-3 p-3 rounded-xl border border-zinc-100 hover:bg-zinc-50 transition-colors">
             <div className={`w-9 h-9 rounded-full ${AVATAR_COLORS[i % 5]} flex items-center justify-center text-white text-xs font-semibold shrink-0`}>
-              {u.avatar ? <img src={`http://localhost:5000${u.avatar}`} className="w-full h-full object-cover rounded-full" alt={u.name} /> : initials}
+              {u.avatar ? <img src={`http://localhost:5000${u.avatar}`} className="w-full h-full object-cover rounded-full" alt={u.name} onError={(e) => { e.target.style.display = 'none' }} /> : initials}
             </div>
             <div className="flex-1 min-w-0">
               <p className="text-sm font-medium text-primary truncate">{u.name}</p>
@@ -162,7 +164,7 @@ export default function AdminDashboard() {
             <p className="text-xs text-secondary">visits</p>
           </div>
           <div className="w-20 h-1.5 bg-zinc-100 rounded-full overflow-hidden">
-            <div className="h-full bg-blue-400 rounded-full" style={{ width: `${(Number(c.visits) / maxVisits) * 100}%` }} />
+            <div className="h-full rounded-full" style={{ background: primary_color, width: `${(Number(c.visits) / maxVisits) * 100}%` }} />
           </div>
         </div>
       )
@@ -231,8 +233,8 @@ export default function AdminDashboard() {
                 <XAxis dataKey="x" tick={{ fontSize: 11 }} />
                 <YAxis tick={{ fontSize: 11 }} />
                 <Tooltip />
-                <Line type="monotone" dataKey="users" stroke="#4ab3d4" strokeWidth={2} dot={{ r: 4 }} name="Users" />
-                <Line type="monotone" dataKey="trips" stroke="#e05c5c" strokeWidth={2} dot={{ r: 4 }} name="Trips" />
+                <Line type="monotone" dataKey="users" stroke={primary_color} strokeWidth={2} dot={{ r: 4 }} name="Users" />
+                <Line type="monotone" dataKey="trips" stroke={secondary_color} strokeWidth={2} dot={{ r: 4 }} name="Trips" />
               </LineChart>
             </ResponsiveContainer>
           </div>
@@ -243,7 +245,7 @@ export default function AdminDashboard() {
                 <XAxis dataKey="x" tick={{ fontSize: 11 }} />
                 <YAxis hide />
                 <Tooltip />
-                <Bar dataKey="v" radius={[4, 4, 0, 0]} fill="#f0a04b" name="Visits" />
+                <Bar dataKey="v" radius={[4, 4, 0, 0]} fill={primary_color} name="Visits" />
               </BarChart>
             </ResponsiveContainer>
           </div>

@@ -3,6 +3,8 @@ import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
 import { Search, SlidersHorizontal, ArrowUpDown, LayoutGrid, Plus, RotateCcw, Share2, X } from 'lucide-react'
+import { Input } from '../components/ui/Input'
+import { Button } from '../components/ui/Button'
 import api from '../utils/api'
 
 const addSchema = z.object({ item: z.string().min(2, 'Item must be at least 2 characters') })
@@ -138,9 +140,19 @@ export default function PackingChecklist() {
                   ))}
                   {addingTo === cat ? (
                     <form onSubmit={handleSubmit(onAddItem)} className="flex items-center gap-2 mt-1">
-                      <input {...register('item')} autoFocus placeholder="Item name..." className={`flex-1 border rounded-lg px-3 py-1.5 text-sm focus:outline-none focus:ring-2 focus:border-transparent transition-all ${errors.item ? 'border-red-400 focus:ring-red-200' : 'border-zinc-200 focus:ring-blue-200'}`} />
-                      <button type="submit" className="text-xs font-medium px-3 py-1.5 rounded-lg text-white transition-all" style={{ background: '#4285F4' }}>Add</button>
-                      <button type="button" onClick={() => { setAddingTo(null); reset() }} className="text-xs font-medium px-3 py-1.5 rounded-lg border border-zinc-200 text-secondary hover:bg-zinc-50 transition-all">Cancel</button>
+                      <Input
+                        id="item"
+                        placeholder="Item name..."
+                        autoFocus
+                        error={errors.item?.message}
+                        {...register('item')}
+                      />
+                      <Button type="submit" className="!w-auto px-3 text-xs">
+                        Add
+                      </Button>
+                      <Button type="button" variant="outline" onClick={() => { setAddingTo(null); reset() }} className="!w-auto px-3 text-xs">
+                        Cancel
+                      </Button>
                     </form>
                   ) : (
                     <button onClick={() => setAddingTo(cat)} className="flex items-center gap-1.5 text-xs font-medium mt-1 self-start px-2 py-1 rounded-lg hover:bg-blue-50 transition-colors" style={{ color: '#4285F4' }}>
@@ -163,11 +175,20 @@ export default function PackingChecklist() {
             <div className="bg-white border border-zinc-100 rounded-2xl p-5">
               <h3 className="text-sm font-semibold text-primary mb-3">Add Item to {addingTo}</h3>
               <form onSubmit={handleSubmit(onAddItem)} className="flex items-center gap-2">
-                <input {...register('item')} autoFocus placeholder="Item name..." className={`flex-1 border rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:border-transparent transition-all ${errors.item ? 'border-red-400 focus:ring-red-200' : 'border-zinc-200 focus:ring-blue-200'}`} />
-                <button type="submit" className="text-sm font-medium px-4 py-2 rounded-lg text-white transition-all" style={{ background: '#4285F4' }}>Add</button>
-                <button type="button" onClick={() => { setAddingTo(null); reset() }} className="text-sm font-medium px-4 py-2 rounded-lg border border-zinc-200 text-secondary hover:bg-zinc-50 transition-all">Cancel</button>
+                <Input
+                  id="item"
+                  placeholder="Item name..."
+                  autoFocus
+                  error={errors.item?.message}
+                  {...register('item')}
+                />
+                <Button type="submit" className="!w-auto px-4">
+                  Add
+                </Button>
+                <Button type="button" variant="outline" onClick={() => { setAddingTo(null); reset() }} className="!w-auto px-4">
+                  Cancel
+                </Button>
               </form>
-              {errors.item && <p className="text-xs text-red-500 mt-2">{errors.item.message}</p>}
             </div>
           )}
         </div>
@@ -180,7 +201,7 @@ export default function PackingChecklist() {
         <button onClick={resetAll} className="flex items-center gap-2 px-4 py-2.5 rounded-xl border border-zinc-200 text-sm font-medium text-secondary hover:bg-zinc-50 transition-all">
           <RotateCcw size={14} /> Reset all
         </button>
-        <button onClick={handleShare} className="flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-medium text-white hover:opacity-90 transition-all" style={{ background: shared ? '#34A853' : '#4285F4' }}>
+        <button onClick={handleShare} className="flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-medium text-white bg-primary hover:opacity-90 transition-all">
           <Share2 size={14} /> {shared ? 'Shared!' : 'Share'}
         </button>
       </div>

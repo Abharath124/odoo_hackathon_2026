@@ -3,6 +3,8 @@ import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
 import { Search, SlidersHorizontal, ArrowUpDown, LayoutGrid, Plus, Trash2, Pencil, ChevronDown, StickyNote } from 'lucide-react'
+import { Input } from '../components/ui/Input'
+import { Button } from '../components/ui/Button'
 import api from '../utils/api'
 
 const schema = z.object({
@@ -101,13 +103,13 @@ export default function Notes() {
             </select>
             <ChevronDown size={13} className="absolute right-3 top-1/2 -translate-y-1/2 text-secondary pointer-events-none" />
           </div>
-          <button onClick={() => { setEditingId(null); reset(); setShowForm((v) => !v) }} className="flex items-center gap-1.5 px-4 py-2 rounded-lg text-sm font-medium text-white hover:opacity-90 transition-all shrink-0" style={{ background: '#4285F4' }}>
+          <button onClick={() => { setEditingId(null); reset(); setShowForm((v) => !v) }} className="flex items-center gap-1.5 px-4 py-2 rounded-lg text-sm font-medium text-white bg-primary hover:opacity-90 transition-all shrink-0">
             <Plus size={14} /> Add Note
           </button>
         </div>
         <div className="flex items-center gap-2">
           {tabs.map((tab) => (
-            <button key={tab} onClick={() => setActiveTab(tab)} className="px-4 py-1.5 rounded-lg text-xs font-medium transition-all" style={activeTab === tab ? { background: '#4285F4', color: '#fff' } : { background: '#fff', color: '#5F6368', border: '1px solid #e4e4e7' }}>
+            <button key={tab} onClick={() => setActiveTab(tab)} className={`px-4 py-1.5 rounded-lg text-xs font-medium transition-all ${activeTab === tab ? 'bg-primary text-white' : 'bg-white text-secondary border border-zinc-200'}`}>
               {tab}
             </button>
           ))}
@@ -116,20 +118,33 @@ export default function Notes() {
 
       {showForm && (
         <form onSubmit={handleSubmit(onSubmit)} className="bg-white border border-zinc-200 rounded-2xl p-5 flex flex-col gap-3">
-          <div>
-            <input {...register('title')} placeholder="Note title *" className={inputCls(errors.title)} />
-            {errors.title && <p className="text-xs text-red-400 mt-0.5">{errors.title.message}</p>}
-          </div>
-          <div>
-            <textarea {...register('body')} placeholder="Write your note..." rows={3} className={`${inputCls(errors.body)} resize-none`} />
+          <Input
+            id="title"
+            placeholder="Note title *"
+            error={errors.title?.message}
+            {...register('title')}
+          />
+          <div className="flex flex-col gap-1">
+            <textarea
+              {...register('body')}
+              placeholder="Write your note..."
+              rows={3}
+              className={`w-full border rounded-lg px-3.5 py-2.5 text-sm text-primary bg-zinc-50 placeholder:text-secondary/50 focus:outline-none focus:ring-2 focus:bg-white focus:border-transparent transition-all resize-none ${errors.body ? 'border-red-400 focus:ring-red-400' : 'border-zinc-200 focus:ring-primary'}`}
+            />
             {errors.body && <p className="text-xs text-red-400 mt-0.5">{errors.body.message}</p>}
           </div>
-          <input {...register('day')} placeholder="Day number (e.g. 3)" className={inputCls(false)} />
+          <Input
+            id="day"
+            placeholder="Day number (e.g. 3)"
+            {...register('day')}
+          />
           <div className="flex gap-2">
-            <button type="submit" disabled={isSubmitting} className="px-4 py-2 rounded-lg text-sm font-medium text-white hover:opacity-90 transition-all disabled:opacity-50" style={{ background: '#4285F4' }}>
+            <Button type="submit" disabled={isSubmitting} className="!w-auto px-4">
               {editingId ? 'Update Note' : 'Save Note'}
-            </button>
-            <button type="button" onClick={cancelForm} className="px-4 py-2 rounded-lg text-sm font-medium text-secondary border border-zinc-200 hover:bg-zinc-50 transition-all">Cancel</button>
+            </Button>
+            <Button type="button" variant="outline" onClick={cancelForm} className="!w-auto px-4">
+              Cancel
+            </Button>
           </div>
         </form>
       )}

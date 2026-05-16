@@ -1,11 +1,24 @@
 import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
+import { useForm } from 'react-hook-form'
+import { zodResolver } from '@hookform/resolvers/zod'
+import { z } from 'zod'
 import { ArrowLeft, Search, SlidersHorizontal, ArrowUpDown, Download, FileText, CheckCircle, Plus, Trash2, Edit2 } from 'lucide-react'
+import { Input } from '../components/ui/Input'
+import { Button } from '../components/ui/Button'
 import api from '../utils/api'
 import jsPDF from 'jspdf'
 import autoTable from 'jspdf-autotable'
 
 const statusColors = { pending: '#FBBC05', paid: '#34A853', cancelled: '#EA4335' }
+
+const addItemSchema = z.object({
+  category: z.string().min(2, 'Category is required'),
+  description: z.string().min(2, 'Description is required'),
+  qtyDetails: z.string().optional(),
+  unitCost: z.coerce.number().min(0, 'Must be 0 or greater'),
+  amount: z.coerce.number().min(0, 'Must be 0 or greater'),
+})
 
 function PieChart({ spent, budget }) {
   const total = Math.max(spent, budget, 1)
@@ -35,7 +48,11 @@ export default function ExpenseInvoice() {
   const [showAddItemModal, setShowAddItemModal] = useState(false)
   const [showPaymentModal, setShowPaymentModal] = useState(false)
   const [paymentMethod, setPaymentMethod] = useState('credit_card')
-  const [newItem, setNewItem] = useState({ category: '', description: '', qtyDetails: '', unitCost: 0, amount: 0 })
+
+  const { register, handleSubmit, reset, formState: { errors, isSubmitting } } = useForm({
+    resolver: zodResolver(addItemSchema),
+    defaultValues: { category: '', description: '', qtyDetails: '', unitCost: 0, amount: 0 },
+  })
 
   useEffect(() => {
     api.get('/trips').then((r) => {
@@ -93,12 +110,11 @@ export default function ExpenseInvoice() {
     } catch (_) {}
   }
 
-  const addItem = async () => {
-    if (!selectedInvoice || !newItem.category || !newItem.description) return
+  const addItem = async (data) => {
+    if (!selectedInvoice) return
     try {
-      const { data } = await api.post(`/invoices/${selectedTripId}/${selectedInvoice.id}/items`, newItem)
-      setSelectedInvoice((prev) => ({ ...prev, items: [...prev.items, data.item] }))
-      setNewItem({ category: '', description: '', qtyDetails: '', unitCost: 0, amount: 0 })
+      await api.post(`/invoices/${selectedTripId}/${selectedInvoice.id}/items`, data)
+      reset()
       setShowAddItemModal(false)
       loadInvoice(selectedTripId, selectedInvoice.id)
     } catch (_) {}
@@ -348,7 +364,7 @@ export default function ExpenseInvoice() {
         <div className="flex flex-col items-center justify-center py-20 gap-3">
           <span className="text-3xl">🧾</span>
           <p className="text-sm text-secondary">No invoices found for this trip.</p>
-          <button onClick={() => setShowCreateModal(true)} className="flex items-center gap-2 px-5 py-2.5 rounded-xl text-sm font-medium text-white mt-2" style={{ background: '#4285F4' }}>
+          <button onClick={() => setShowCreateModal(true)} className="flex items-center gap-2 px-5 py-2.5 rounded-xl text-sm font-medium text-white bg-primary hover:opacity-90 transition-all mt-2">
             <Plus size={14} /> Create Invoice
           </button>
         </div>
@@ -416,10 +432,10 @@ export default function ExpenseInvoice() {
             </div>
 
             <div className="flex items-center gap-3">
-              <button onClick={() => setShowAddItemModal(true)} className="flex items-center gap-2 px-5 py-2.5 rounded-xl text-sm font-medium text-white" style={{ background: '#4285F4' }}><Plus size={14} /> Add Expense Item</button>
+              <button onClick={() => setShowAddItemModal(true)} className="flex items-center gap-2 px-5 py-2.5 rounded-xl text-sm font-medium text-white bg-primary hover:opacity-90 transition-all"><Plus size={14} /> Add Expense Item</button>
               <button onClick={downloadInvoicePDF} className="flex items-center gap-2 px-5 py-2.5 rounded-xl border border-zinc-200 text-sm font-medium text-secondary hover:bg-zinc-50 transition-all"><Download size={14} /> Download Invoice</button>
               <button onClick={downloadInvoicePDF} className="flex items-center gap-2 px-5 py-2.5 rounded-xl border border-zinc-200 text-sm font-medium text-secondary hover:bg-zinc-50 transition-all"><FileText size={14} /> Export as PDF</button>
-              <button onClick={handleMarkPaidClick} disabled={selectedInvoice.paymentStatus === 'paid'} className="flex items-center gap-2 px-5 py-2.5 rounded-xl text-sm font-medium text-white ml-auto hover:opacity-90 transition-all disabled:opacity-60" style={{ background: selectedInvoice.paymentStatus === 'paid' ? '#34A853' : '#4285F4' }}>
+              <button onClick={handleMarkPaidClick} disabled={selectedInvoice.paymentStatus === 'paid'} className="flex items-center gap-2 px-5 py-2.5 rounded-xl text-sm font-medium text-white ml-auto hover:opacity-90 transition-all disabled:opacity-60 bg-primary">
                 <CheckCircle size={14} /> {selectedInvoice.paymentStatus === 'paid' ? 'Paid ✓' : 'Mark as paid'}
               </button>
             </div>
@@ -449,28 +465,60 @@ export default function ExpenseInvoice() {
             <p className="text-sm text-secondary mb-6">A new invoice will be created for this trip. You can add expense items after creation.</p>
             <div className="flex gap-3">
               <button onClick={() => setShowCreateModal(false)} className="flex-1 px-4 py-2.5 rounded-xl border border-zinc-200 text-sm font-medium text-secondary hover:bg-zinc-50 transition-all">Cancel</button>
-              <button onClick={createInvoice} className="flex-1 px-4 py-2.5 rounded-xl text-sm font-medium text-white" style={{ background: '#4285F4' }}>Create</button>
+              <button onClick={createInvoice} className="flex-1 px-4 py-2.5 rounded-xl text-sm font-medium text-white bg-primary hover:opacity-90 transition-all">Create</button>
             </div>
           </div>
         </div>
       )}
 
       {showAddItemModal && (
-        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50" onClick={() => setShowAddItemModal(false)}>
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50" onClick={() => { setShowAddItemModal(false); reset() }}>
           <div className="bg-white rounded-2xl p-6 w-[500px]" onClick={(e) => e.stopPropagation()}>
             <h3 className="text-lg font-bold text-primary mb-4">Add Expense Item</h3>
-            <div className="flex flex-col gap-3 mb-6">
-              <input value={newItem.category} onChange={(e) => setNewItem({ ...newItem, category: e.target.value })} placeholder="Category (e.g., Hotel, Food, Transport)" className="w-full px-3 py-2 text-sm border border-zinc-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-200" />
-              <input value={newItem.description} onChange={(e) => setNewItem({ ...newItem, description: e.target.value })} placeholder="Description" className="w-full px-3 py-2 text-sm border border-zinc-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-200" />
-              <input value={newItem.qtyDetails} onChange={(e) => setNewItem({ ...newItem, qtyDetails: e.target.value })} placeholder="Quantity/Details (e.g., 2 nights, 3 meals)" className="w-full px-3 py-2 text-sm border border-zinc-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-200" />
+            <form onSubmit={handleSubmit(addItem)} className="flex flex-col gap-3 mb-6">
+              <Input
+                id="category"
+                placeholder="Category (e.g., Hotel, Food, Transport)"
+                error={errors.category?.message}
+                {...register('category')}
+              />
+              <Input
+                id="description"
+                placeholder="Description"
+                error={errors.description?.message}
+                {...register('description')}
+              />
+              <Input
+                id="qtyDetails"
+                placeholder="Quantity/Details (e.g., 2 nights, 3 meals)"
+                {...register('qtyDetails')}
+              />
               <div className="flex gap-3">
-                <input value={newItem.unitCost} onChange={(e) => setNewItem({ ...newItem, unitCost: e.target.value })} placeholder="Unit Cost" type="number" className="flex-1 px-3 py-2 text-sm border border-zinc-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-200" />
-                <input value={newItem.amount} onChange={(e) => setNewItem({ ...newItem, amount: e.target.value })} placeholder="Total Amount" type="number" className="flex-1 px-3 py-2 text-sm border border-zinc-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-200" />
+                <Input
+                  id="unitCost"
+                  placeholder="Unit Cost"
+                  type="number"
+                  step="0.01"
+                  error={errors.unitCost?.message}
+                  {...register('unitCost')}
+                />
+                <Input
+                  id="amount"
+                  placeholder="Total Amount"
+                  type="number"
+                  step="0.01"
+                  error={errors.amount?.message}
+                  {...register('amount')}
+                />
               </div>
-            </div>
+            </form>
             <div className="flex gap-3">
-              <button onClick={() => setShowAddItemModal(false)} className="flex-1 px-4 py-2.5 rounded-xl border border-zinc-200 text-sm font-medium text-secondary hover:bg-zinc-50 transition-all">Cancel</button>
-              <button onClick={addItem} className="flex-1 px-4 py-2.5 rounded-xl text-sm font-medium text-white" style={{ background: '#4285F4' }}>Add Item</button>
+              <Button type="button" variant="outline" onClick={() => { setShowAddItemModal(false); reset() }} className="!w-auto flex-1">
+                Cancel
+              </Button>
+              <Button type="button" onClick={handleSubmit(addItem)} disabled={isSubmitting} className="!w-auto flex-1">
+                {isSubmitting ? 'Adding...' : 'Add Item'}
+              </Button>
             </div>
           </div>
         </div>

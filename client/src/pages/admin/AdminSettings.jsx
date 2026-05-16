@@ -124,7 +124,7 @@ export default function AdminSettings() {
             className="w-16 h-16 rounded-xl border-2 border-dashed border-zinc-200 flex items-center justify-center cursor-pointer hover:border-zinc-400 transition-colors overflow-hidden shrink-0"
           >
             {logoPreview || logo ? (
-              <img src={logoPreview || `http://localhost:5000${logo}`} alt="logo" className="w-full h-full object-cover" />
+              <img src={logoPreview || `http://localhost:5000${logo}`} alt="logo" className="w-full h-full object-cover" onError={(e) => { e.target.style.display = 'none' }} />
             ) : (
               <ImageIcon size={20} className="text-zinc-300" />
             )}

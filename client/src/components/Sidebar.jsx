@@ -2,6 +2,7 @@ import { NavLink, useNavigate } from 'react-router-dom'
 import { useDispatch, useSelector } from 'react-redux'
 import { logout } from '../store/authSlice'
 import api from '../utils/api'
+import BrandLogo from './BrandLogo'
 
 const navItems = [
   { label: 'Dashboard', path: '/home' },
@@ -23,7 +24,7 @@ export default function Sidebar({ open, onClose }) {
   const { site_name } = useSelector((state) => state.site)
 
   const handleLogout = async () => {
-    try { await api.post('/auth/logout') } catch (_) {}
+    try { await api.post('/auth/logout') } catch (_) { }
     dispatch(logout())
     navigate('/login')
   }
@@ -41,7 +42,7 @@ export default function Sidebar({ open, onClose }) {
         ${open ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'}
       `}>
         <span className="text-sm font-semibold text-primary px-3 mb-6 tracking-tight flex items-center gap-2">
-          <span className="bg-primary w-6 h-6 rounded-md flex items-center justify-center text-white text-xs">⬡</span>
+          <BrandLogo />
           {site_name}
         </span>
 
@@ -52,10 +53,9 @@ export default function Sidebar({ open, onClose }) {
               to={path}
               onClick={onClose}
               className={({ isActive }) =>
-                `text-sm px-3 py-2 rounded-lg transition-colors ${
-                  isActive
-                    ? 'bg-primary/10 text-primary font-medium'
-                    : 'text-secondary hover:text-primary hover:bg-zinc-50'
+                `text-sm px-3 py-2 rounded-lg transition-colors ${isActive
+                  ? 'bg-primary/10 text-primary font-medium'
+                  : 'text-secondary hover:text-primary hover:bg-zinc-50'
                 }`
               }
             >

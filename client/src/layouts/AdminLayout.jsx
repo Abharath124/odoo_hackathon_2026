@@ -35,7 +35,7 @@ export default function AdminLayout() {
             {user?.name && <span className="text-xs text-secondary hidden sm:block">{user.name}</span>}
             <div className="bg-primary w-8 h-8 rounded-full flex items-center justify-center text-xs font-medium text-white overflow-hidden">
               {user?.avatar
-                ? <img src={`http://localhost:5000${user.avatar}`} alt="avatar" className="w-full h-full object-cover" />
+                ? <img src={`http://localhost:5000${user.avatar}`} alt="avatar" className="w-full h-full object-cover" onError={(e) => { e.target.style.display = 'none' }} />
                 : initials
               }
             </div>

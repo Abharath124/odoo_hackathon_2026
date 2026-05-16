@@ -96,11 +96,12 @@ DB_USER=root
 DB_PASSWORD=
 
 CLIENT_URL=http://localhost:5173
-
-ADMIN_NAME=Admin
-ADMIN_EMAIL=admin@travelloop.com
-ADMIN_PASSWORD=Admin@1234
 ```
+
+**Admin Credentials:** 
+
+Email = admin@travelloop.com
+Password = Admin@1234
 
 > **Note:** JWT secret and SMTP credentials are configured through the Admin Panel → Settings, not via `.env`.
 

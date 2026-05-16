@@ -84,14 +84,14 @@ export default function Signup() {
             <Input id="country" label="Country" type="text" placeholder="United States" required error={errors.country?.message} {...register('country')} />
           </div>
 
-          <div>
-            <label htmlFor="additionalInfo" className="block text-sm font-medium text-primary mb-2">Additional Information</label>
+          <div className="flex flex-col gap-1">
+            <label htmlFor="additionalInfo" className="text-xs font-medium text-secondary">Additional Information</label>
             <textarea
               id="additionalInfo"
               placeholder="Tell us more about yourself (optional)"
-              className="w-full px-3 py-2 text-sm border border-zinc-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-200 resize-none"
-              rows="3"
+              rows={3}
               {...register('additionalInfo')}
+              className="w-full border border-zinc-200 rounded-lg px-3.5 py-2.5 text-sm text-primary bg-zinc-50 placeholder:text-secondary/50 focus:outline-none focus:ring-2 focus:ring-primary focus:bg-white focus:border-transparent transition-all resize-none"
             />
           </div>
 
@@ -101,7 +101,7 @@ export default function Signup() {
           </div>
 
           <Button type="submit" disabled={isSubmitting} className="mt-2">
-            {isSubmitting ? 'Creating account...' : 'Register user'}
+            {isSubmitting ? 'Creating account...' : 'Sign Up'}
           </Button>
           {errors.root && <p className="text-xs text-red-400 text-center">{errors.root.message}</p>}
         </form>

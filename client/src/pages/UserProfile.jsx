@@ -5,6 +5,8 @@ import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
 import { Pencil, Check, X, Eye } from 'lucide-react'
+import { Input } from '../components/ui/Input'
+import { Button } from '../components/ui/Button'
 import api from '../utils/api'
 import { fetchMe } from '../store/authSlice'
 
@@ -78,7 +80,7 @@ export default function UserProfile() {
     <div className="flex flex-col gap-6 pb-10">
       <div className="bg-white border border-zinc-100 rounded-2xl p-6 flex items-start gap-6">
         <div className="w-24 h-24 rounded-full flex items-center justify-center text-2xl font-bold text-white shrink-0 border-4 border-white shadow-md overflow-hidden" style={{ background: 'linear-gradient(135deg, #4285F4, #34A853)' }}>
-          {user?.avatar ? <img src={`http://localhost:5000${user.avatar}`} alt="avatar" className="w-full h-full object-cover" /> : initials}
+          {user?.avatar ? <img src={`http://localhost:5000${user.avatar}`} alt="avatar" className="w-full h-full object-cover" onError={(e) => { e.target.style.display = 'none' }} /> : initials}
         </div>
 
         <div className="flex-1 flex flex-col gap-3">
@@ -101,16 +103,22 @@ export default function UserProfile() {
 
           {editing ? (
             <form id="profile-form" onSubmit={handleSubmit(onSubmit)} className="grid grid-cols-2 gap-x-6 gap-y-3">
-              <div className="flex flex-col gap-0.5">
-                <span className="text-xs text-secondary">Full Name</span>
-                <input {...register('name')} className={`text-sm text-primary border rounded-lg px-2.5 py-1.5 bg-zinc-50 focus:outline-none focus:ring-2 focus:border-transparent transition-all ${errors.name ? 'border-red-400 focus:ring-red-200' : 'border-zinc-200 focus:ring-blue-200'}`} />
-                {errors.name && <p className="text-xs text-red-400">{errors.name.message}</p>}
-              </div>
-              <div className="flex flex-col gap-0.5">
-                <span className="text-xs text-secondary">Email</span>
-                <input {...register('email')} className={`text-sm text-primary border rounded-lg px-2.5 py-1.5 bg-zinc-50 focus:outline-none focus:ring-2 focus:border-transparent transition-all ${errors.email ? 'border-red-400 focus:ring-red-200' : 'border-zinc-200 focus:ring-blue-200'}`} />
-                {errors.email && <p className="text-xs text-red-400">{errors.email.message}</p>}
-              </div>
+              <Input
+                id="name"
+                label="Full Name"
+                type="text"
+                required
+                error={errors.name?.message}
+                {...register('name')}
+              />
+              <Input
+                id="email"
+                label="Email"
+                type="email"
+                required
+                error={errors.email?.message}
+                {...register('email')}
+              />
             </form>
           ) : (
             <div className="grid grid-cols-2 gap-x-6 gap-y-2">
